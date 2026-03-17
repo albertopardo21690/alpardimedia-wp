@@ -1,3 +1,5 @@
 {"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:09:21"}
 {"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:09:21"}
 {"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:09:49"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:10:30"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:11:19 +0000] \"GET /api/health HTTP/1.1\" 200 98 \"-\" \"curl/8.17.0\"","timestamp":"2026-03-17 15:11:19"}
