@@ -3,3 +3,24 @@
 {"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:09:49"}
 {"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:10:30"}
 {"level":"info","message":"::1 - - [17/Mar/2026:14:11:19 +0000] \"GET /api/health HTTP/1.1\" 200 98 \"-\" \"curl/8.17.0\"","timestamp":"2026-03-17 15:11:19"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:15:37 +0000] \"GET /api/projects HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:15:37"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:15:39 +0000] \"GET /api/manage/2/metrics HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:15:39"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:20:00"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:20:01"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:20:01"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:21:00 +0000] \"GET /api/projects HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:21:00"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:21:02 +0000] \"GET /api/manage/2/metrics HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:21:02"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:21:04 +0000] \"GET /api/projects HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:21:04"}
+{"level":"info","message":"::1 - - [17/Mar/2026:14:21:06 +0000] \"GET /api/manage/2/metrics HTTP/1.1\" 304 - \"http://localhost:4200/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36\"","timestamp":"2026-03-17 15:21:06"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:24:12"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:25:00"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:25:38"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:26:01","url":"/api/auth/register"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:26:01","url":"/api/auth/register"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:26:01","url":"/api/projects","user":2}
+{"code":"NOT_FOUND","level":"warn","message":"Ruta GET /api/ruta-inexistente no encontrado","method":"GET","timestamp":"2026-03-17 15:26:01","url":"/api/ruta-inexistente"}
+{"level":"info","message":"Servidor corriendo en http://localhost:3000","timestamp":"2026-03-17 15:26:42"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:27:09","url":"/api/auth/register"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:27:09","url":"/api/auth/register"}
+{"code":"VALIDATION_ERROR","level":"warn","message":"Datos de entrada inválidos","method":"POST","timestamp":"2026-03-17 15:27:09","url":"/api/projects","user":3}
+{"code":"NOT_FOUND","level":"warn","message":"Ruta GET /api/ruta-inexistente no encontrado","method":"GET","timestamp":"2026-03-17 15:27:09","url":"/api/ruta-inexistente"}

@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "Alpardimedia WP API",
+    "description": "Colección completa de endpoints de la API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "token",   "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Alberto\", \"email\": \"alberto@test.com\", \"password\": \"Test1234\"}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const res = pm.response.json();",
+                "if (res.token) pm.collectionVariables.set('token', res.token);"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"alberto@test.com\", \"password\": \"Test1234\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get All Projects",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/projects",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/projects",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Mi proyecto\", \"description\": \"Descripción\"}"
+            }
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/projects/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "WordPress",
+      "item": [
+        {
+          "name": "Validate DB",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/wordpress/validate-db",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"dbHost\": \"localhost\", \"dbUser\": \"root\", \"dbPassword\": \"\", \"dbName\": \"wp_test\"}"
+            }
+          }
+        },
+        {
+          "name": "Preview wp-config",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/wordpress/preview-config",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"dbName\": \"wp_test\", \"dbUser\": \"root\", \"dbPassword\": \"\", \"dbHost\": \"localhost\", \"dbPrefix\": \"wp_\", \"language\": \"es_ES\"}"
+            }
+          }
+        },
+        {
+          "name": "Install WordPress",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/wordpress/install",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"projectId\": 1, \"config\": {\"siteName\": \"Mi sitio\", \"siteDescription\": \"Descripción\", \"dbName\": \"wp_test\", \"dbUser\": \"root\", \"dbPassword\": \"\", \"dbHost\": \"localhost\", \"dbPrefix\": \"wp_\", \"adminUser\": \"admin\", \"adminPassword\": \"Admin1234!\", \"adminEmail\": \"admin@test.com\", \"language\": \"es_ES\"}}"
+            }
+          }
+        },
+        {
+          "name": "WP Status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/wordpress/status/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    }
+  ]
+}
