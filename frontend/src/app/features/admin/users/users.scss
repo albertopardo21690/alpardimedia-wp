@@ -1,0 +1,31 @@
+@use '../dashboard/dashboard.scss';
+
+.table-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  mat-icon { color: var(--text-muted); font-size: 1.2rem; width: 1.2rem; height: 1.2rem; }
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  &.admin   { background: #fef3c7; color: #b45309; }
+  &.user    { background: var(--color-info-bg); color: var(--color-info); }
+  &.active  { background: var(--color-success-bg); color: var(--color-success); }
+  &.blocked { background: var(--color-error-bg); color: var(--color-error); }
+}
+
+.plan-select { font-size: var(--font-size-xs); width: 100px; }
+.blocked-row { opacity: 0.6; }
+.menu-danger { color: var(--color-error) !important; }

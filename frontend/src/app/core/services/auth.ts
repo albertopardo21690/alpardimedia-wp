@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-export interface User { id: number; name: string; email: string; }
+export interface User { id: number; name: string; email: string; role: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

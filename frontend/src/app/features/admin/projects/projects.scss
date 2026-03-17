@@ -1,0 +1,33 @@
+@use '../dashboard/dashboard.scss';
+
+.table-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  small { color: var(--text-muted); font-size: 0.7rem; }
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  &.installed  { background: var(--color-success-bg); color: var(--color-success); }
+  &.pending    { background: var(--color-warning-bg); color: var(--color-warning); }
+  &.error      { background: var(--color-error-bg);   color: var(--color-error); }
+  &.installing { background: var(--color-info-bg);    color: var(--color-info); }
+}
+
+.url-link {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}

@@ -1,0 +1,103 @@
+<div class="admin-wrapper">
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <mat-icon>shield</mat-icon>
+      <span>Admin Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section">Panel</span>
+      <a routerLink="/admin/dashboard" class="nav-item active">
+        <mat-icon>dashboard</mat-icon> Dashboard
+      </a>
+      <span class="nav-section">Gestión</span>
+      <a routerLink="/admin/users" class="nav-item">
+        <mat-icon>people</mat-icon> Usuarios
+      </a>
+      <a routerLink="/admin/projects" class="nav-item">
+        <mat-icon>folder</mat-icon> Proyectos
+      </a>
+      <a routerLink="/admin/logs" class="nav-item">
+        <mat-icon>terminal</mat-icon> Logs
+      </a>
+      <span class="nav-section">Accesos</span>
+      <a routerLink="/dashboard" class="nav-item">
+        <mat-icon>arrow_back</mat-icon> Panel usuario
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <span>{{ user()?.name }}</span>
+      </div>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-content">
+    <header class="admin-header">
+      <div>
+        <h1>Panel de Administración</h1>
+        <p>Control total de Alpardimedia WP</p>
+      </div>
+    </header>
+
+    @if (loading) {
+      <div class="loading-center"><mat-spinner diameter="48" /></div>
+    } @else {
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <mat-icon>people</mat-icon>
+          <div>
+            <span class="stat-num">{{ stats?.users }}</span>
+            <span class="stat-lbl">Usuarios totales</span>
+          </div>
+        </div>
+        <div class="stat-card green">
+          <mat-icon>folder</mat-icon>
+          <div>
+            <span class="stat-num">{{ stats?.projects }}</span>
+            <span class="stat-lbl">Proyectos totales</span>
+          </div>
+        </div>
+        <div class="stat-card purple">
+          <mat-icon>language</mat-icon>
+          <div>
+            <span class="stat-num">{{ stats?.installed }}</span>
+            <span class="stat-lbl">WP instalados</span>
+          </div>
+        </div>
+        <div class="stat-card orange">
+          <mat-icon>shield</mat-icon>
+          <div>
+            <span class="stat-num">{{ stats?.admins }}</span>
+            <span class="stat-lbl">Administradores</span>
+          </div>
+        </div>
+        <div class="stat-card red">
+          <mat-icon>block</mat-icon>
+          <div>
+            <span class="stat-num">{{ stats?.blocked }}</span>
+            <span class="stat-lbl">Usuarios bloqueados</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <h2>Acceso rápido</h2>
+        <div class="actions-grid">
+          <a mat-stroked-button routerLink="/admin/users">
+            <mat-icon>people</mat-icon> Gestionar usuarios
+          </a>
+          <a mat-stroked-button routerLink="/admin/projects">
+            <mat-icon>folder</mat-icon> Ver proyectos
+          </a>
+          <a mat-stroked-button routerLink="/admin/logs">
+            <mat-icon>terminal</mat-icon> Ver logs
+          </a>
+        </div>
+      </div>
+    }
+  </main>
+</div>
