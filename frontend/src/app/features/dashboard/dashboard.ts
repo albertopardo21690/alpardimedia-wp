@@ -29,10 +29,11 @@ import { StatusCountPipe } from '../../shared/pipes/status-count.pipe';
   styleUrl: './dashboard.scss'
 })
 export class DashboardComponent implements OnInit {
-  projects: Project[]         = [];
-  metrics:  Record<number, any> = {};
-  loading       = true;
+  projects: Project[]               = [];
+  metrics:  Record<number, any>     = {};
+  loading                           = true;
   loadingAction: Record<number, boolean> = {};
+  sidebarOpen                       = false;
   user = signal<any>(null);
 
   constructor(
@@ -54,7 +55,6 @@ export class DashboardComponent implements OnInit {
       next: (data) => {
         this.projects = data;
         this.loading  = false;
-        // Cargar métricas de proyectos instalados
         data.filter(p => p.status === 'installed').forEach(p => this.loadMetrics(p.id));
       },
       error: () => { this.loading = false; }
@@ -68,22 +68,16 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  goToPanel(projectId: number) {
-    this.router.navigate(['/projects', projectId]);
-  }
-
-  goToInstall() {
-    this.router.navigate(['/projects/install']);
-  }
+  toggleSidebar()       { this.sidebarOpen = !this.sidebarOpen; }
+  closeSidebar()        { this.sidebarOpen = false; }
+  goToPanel(id: number) { this.router.navigate(['/projects', id]); this.closeSidebar(); }
+  goToInstall()         { this.router.navigate(['/projects/install']); this.closeSidebar(); }
 
   deleteProject(project: Project) {
-    if (!confirm(`¿Eliminar el proyecto "${project.name}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(`¿Eliminar "${project.name}"? Esta acción no se puede deshacer.`)) return;
     this.loadingAction[project.id] = true;
     this.projectsService.remove(project.id).subscribe({
-      next: () => {
-        this.notify('Proyecto eliminado');
-        this.loadProjects();
-      },
+      next: () => { this.notify('Proyecto eliminado'); this.loadProjects(); },
       error: (err) => {
         this.notify(err.error?.error || 'Error al eliminar', true);
         this.loadingAction[project.id] = false;
@@ -101,12 +95,22 @@ export class DashboardComponent implements OnInit {
   }
 
   getStatusLabel(status: string) {
-    const map: any = { installed: 'Instalado', installing: 'Instalando...', error: 'Error', pending: 'Pendiente' };
+    const map: any = {
+      installed:  'Instalado',
+      installing: 'Instalando...',
+      error:      'Error',
+      pending:    'Pendiente'
+    };
     return map[status] || status;
   }
 
   getStatusIcon(status: string) {
-    const map: any = { installed: 'check_circle', installing: 'sync', error: 'error_outline', pending: 'schedule' };
+    const map: any = {
+      installed:  'check_circle',
+      installing: 'sync',
+      error:      'error_outline',
+      pending:    'schedule'
+    };
     return map[status] || 'help';
   }
 }

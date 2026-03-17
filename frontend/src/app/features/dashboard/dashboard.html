@@ -1,19 +1,26 @@
 <div class="dashboard-wrapper">
 
+  <!-- OVERLAY MOBILE -->
+  <div class="sidebar-overlay" [class.visible]="sidebarOpen" (click)="closeSidebar()"></div>
+
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" [class.open]="sidebarOpen">
     <div class="sidebar-logo">
       <mat-icon>language</mat-icon>
       <span>Alpardimedia</span>
     </div>
+
     <nav class="sidebar-nav">
-      <a routerLink="/dashboard" class="nav-item active">
+      <span class="nav-section">General</span>
+      <a routerLink="/dashboard" class="nav-item active" (click)="closeSidebar()">
         <mat-icon>dashboard</mat-icon> Dashboard
       </a>
-      <a routerLink="/projects/install" class="nav-item">
-        <mat-icon>add_circle</mat-icon> Nuevo proyecto
+      <span class="nav-section">Proyectos</span>
+      <a routerLink="/projects/install" class="nav-item" (click)="closeSidebar()">
+        <mat-icon>add_circle_outline</mat-icon> Nuevo proyecto
       </a>
     </nav>
+
     <div class="sidebar-footer">
       <div class="user-info">
         <mat-icon>account_circle</mat-icon>
@@ -28,7 +35,18 @@
   <!-- MAIN -->
   <main class="main-content">
 
-    <!-- HEADER -->
+    <!-- MOBILE HEADER -->
+    <div class="mobile-header">
+      <button mat-icon-button (click)="toggleSidebar()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>Alpardimedia</span>
+      <button mat-icon-button (click)="goToInstall()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <!-- HEADER DESKTOP -->
     <header class="main-header">
       <div>
         <h1>Dashboard</h1>
@@ -42,7 +60,7 @@
     <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon total"><mat-icon>folder</mat-icon></div>
+        <div class="stat-icon total"><mat-icon>folder_open</mat-icon></div>
         <div>
           <span class="stat-number">{{ projects.length }}</span>
           <span class="stat-label">Proyectos totales</span>
@@ -52,7 +70,7 @@
         <div class="stat-icon installed"><mat-icon>check_circle</mat-icon></div>
         <div>
           <span class="stat-number">{{ projects | statusCount:'installed' }}</span>
-          <span class="stat-label">WordPress instalados</span>
+          <span class="stat-label">WP instalados</span>
         </div>
       </div>
       <div class="stat-card">
@@ -94,16 +112,15 @@
           @for (project of projects; track project.id) {
             <div class="project-card" [class]="project.status">
 
-              <!-- CARD HEADER -->
               <div class="card-header">
                 <div class="card-icon">
                   <mat-icon>language</mat-icon>
                 </div>
                 <div class="card-title">
                   <h3>{{ project.name }}</h3>
-                  <p>{{ project.description }}</p>
+                  <p>{{ project.description || 'Sin descripción' }}</p>
                 </div>
-                <button mat-icon-button [matMenuTriggerFor]="projectMenu" class="card-menu">
+                <button mat-icon-button [matMenuTriggerFor]="projectMenu">
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #projectMenu="matMenu">
@@ -111,20 +128,17 @@
                     <mat-icon>settings</mat-icon> Gestionar
                   </button>
                   @if (project.wp_admin_url) {
-                    <button mat-menu-item (click)="null">
-                      <a [href]="project.wp_admin_url" target="_blank" class="menu-link">
-                        <mat-icon>admin_panel_settings</mat-icon> wp-admin
-                      </a>
-                    </button>
+                    <a mat-menu-item [href]="project.wp_admin_url" target="_blank">
+                      <mat-icon>admin_panel_settings</mat-icon> wp-admin
+                    </a>
                   }
                   <mat-divider />
                   <button mat-menu-item (click)="deleteProject(project)" class="menu-danger">
-                    <mat-icon>delete</mat-icon> Eliminar
+                    <mat-icon>delete_outline</mat-icon> Eliminar
                   </button>
                 </mat-menu>
               </div>
 
-              <!-- STATUS -->
               <div class="card-status" [class]="project.status">
                 <mat-icon>{{ getStatusIcon(project.status) }}</mat-icon>
                 <span>{{ getStatusLabel(project.status) }}</span>
@@ -133,7 +147,6 @@
                 }
               </div>
 
-              <!-- MÉTRICAS (solo si instalado) -->
               @if (project.status === 'installed' && metrics[project.id]) {
                 <div class="card-metrics">
                   <div class="metric">
@@ -151,7 +164,6 @@
                 </div>
               }
 
-              <!-- ACCIONES -->
               <div class="card-actions">
                 @if (project.status === 'installed') {
                   <button mat-stroked-button (click)="goToPanel(project.id)">
@@ -164,7 +176,7 @@
                   }
                 } @else if (project.status === 'pending') {
                   <button mat-flat-button color="primary" (click)="goToInstall()">
-                    <mat-icon>download</mat-icon> Instalar WordPress
+                    <mat-icon>download</mat-icon> Instalar WP
                   </button>
                 } @else if (project.status === 'error') {
                   <button mat-stroked-button color="warn" (click)="goToPanel(project.id)">
