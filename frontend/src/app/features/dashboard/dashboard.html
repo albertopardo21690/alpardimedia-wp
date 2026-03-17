@@ -10,9 +10,6 @@
       <a routerLink="/dashboard" class="nav-item active">
         <mat-icon>dashboard</mat-icon> Dashboard
       </a>
-      <a routerLink="/projects" class="nav-item">
-        <mat-icon>folder</mat-icon> Proyectos
-      </a>
       <a routerLink="/projects/install" class="nav-item">
         <mat-icon>add_circle</mat-icon> Nuevo proyecto
       </a>
@@ -22,7 +19,7 @@
         <mat-icon>account_circle</mat-icon>
         <span>{{ user()?.name }}</span>
       </div>
-      <button mat-icon-button (click)="logout()" title="Cerrar sesión">
+      <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
         <mat-icon>logout</mat-icon>
       </button>
     </div>
@@ -30,88 +27,157 @@
 
   <!-- MAIN -->
   <main class="main-content">
+
+    <!-- HEADER -->
     <header class="main-header">
       <div>
         <h1>Dashboard</h1>
         <p>Bienvenido, {{ user()?.name }} 👋</p>
       </div>
-      <a mat-flat-button color="primary" routerLink="/projects/install">
+      <button mat-flat-button color="primary" (click)="goToInstall()">
         <mat-icon>add</mat-icon> Nuevo proyecto
-      </a>
+      </button>
     </header>
 
     <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card">
-        <mat-icon>folder</mat-icon>
+        <div class="stat-icon total"><mat-icon>folder</mat-icon></div>
         <div>
           <span class="stat-number">{{ projects.length }}</span>
           <span class="stat-label">Proyectos totales</span>
         </div>
       </div>
       <div class="stat-card">
-        <mat-icon class="installed">check_circle</mat-icon>
+        <div class="stat-icon installed"><mat-icon>check_circle</mat-icon></div>
         <div>
           <span class="stat-number">{{ projects | statusCount:'installed' }}</span>
           <span class="stat-label">WordPress instalados</span>
         </div>
       </div>
       <div class="stat-card">
-        <mat-icon class="pending">schedule</mat-icon>
+        <div class="stat-icon pending"><mat-icon>schedule</mat-icon></div>
         <div>
           <span class="stat-number">{{ projects | statusCount:'pending' }}</span>
           <span class="stat-label">Pendientes</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon error"><mat-icon>error_outline</mat-icon></div>
+        <div>
+          <span class="stat-number">{{ projects | statusCount:'error' }}</span>
+          <span class="stat-label">Con errores</span>
         </div>
       </div>
     </div>
 
     <!-- PROYECTOS -->
     <section class="projects-section">
-      <h2>Mis proyectos</h2>
+      <div class="section-header">
+        <h2>Mis proyectos</h2>
+        <span class="project-count">{{ projects.length }} proyecto{{ projects.length !== 1 ? 's' : '' }}</span>
+      </div>
 
       @if (loading) {
-        <div class="loading-center">
-          <mat-spinner diameter="40" />
-        </div>
+        <div class="loading-center"><mat-spinner diameter="48" /></div>
       } @else if (projects.length === 0) {
         <div class="empty-state">
           <mat-icon>rocket_launch</mat-icon>
           <h3>Sin proyectos aún</h3>
           <p>Crea tu primer proyecto WordPress ahora</p>
-          <a mat-flat-button color="primary" routerLink="/projects/install">Crear proyecto</a>
+          <button mat-flat-button color="primary" (click)="goToInstall()">
+            <mat-icon>add</mat-icon> Crear proyecto
+          </button>
         </div>
       } @else {
         <div class="projects-grid">
           @for (project of projects; track project.id) {
-            <mat-card class="project-card">
-              <mat-card-header>
-                <mat-icon mat-card-avatar>language</mat-icon>
-                <mat-card-title>{{ project.name }}</mat-card-title>
-                <mat-card-subtitle>{{ project.description }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="project-status">
-                  <mat-icon [class]="project.status">{{ getStatusIcon(project.status) }}</mat-icon>
-                  <span>{{ getStatusLabel(project.status) }}</span>
+            <div class="project-card" [class]="project.status">
+
+              <!-- CARD HEADER -->
+              <div class="card-header">
+                <div class="card-icon">
+                  <mat-icon>language</mat-icon>
                 </div>
+                <div class="card-title">
+                  <h3>{{ project.name }}</h3>
+                  <p>{{ project.description }}</p>
+                </div>
+                <button mat-icon-button [matMenuTriggerFor]="projectMenu" class="card-menu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #projectMenu="matMenu">
+                  <button mat-menu-item (click)="goToPanel(project.id)">
+                    <mat-icon>settings</mat-icon> Gestionar
+                  </button>
+                  @if (project.wp_admin_url) {
+                    <button mat-menu-item (click)="null">
+                      <a [href]="project.wp_admin_url" target="_blank" class="menu-link">
+                        <mat-icon>admin_panel_settings</mat-icon> wp-admin
+                      </a>
+                    </button>
+                  }
+                  <mat-divider />
+                  <button mat-menu-item (click)="deleteProject(project)" class="menu-danger">
+                    <mat-icon>delete</mat-icon> Eliminar
+                  </button>
+                </mat-menu>
+              </div>
+
+              <!-- STATUS -->
+              <div class="card-status" [class]="project.status">
+                <mat-icon>{{ getStatusIcon(project.status) }}</mat-icon>
+                <span>{{ getStatusLabel(project.status) }}</span>
                 @if (project.wp_url) {
-                  <p class="project-url">{{ project.wp_url }}</p>
+                  <span class="card-url">{{ project.wp_url }}</span>
                 }
-              </mat-card-content>
-              <mat-card-actions>
-                <a mat-button [routerLink]="['/projects', project.id]">
-                  <mat-icon>settings</mat-icon> Gestionar
-                </a>
-                @if (project.wp_admin_url) {
-                  <a mat-button color="primary" [href]="project.wp_admin_url" target="_blank">
-                    <mat-icon>open_in_new</mat-icon> WP Admin
-                  </a>
+              </div>
+
+              <!-- MÉTRICAS (solo si instalado) -->
+              @if (project.status === 'installed' && metrics[project.id]) {
+                <div class="card-metrics">
+                  <div class="metric">
+                    <mat-icon>article</mat-icon>
+                    <span>{{ metrics[project.id].posts }} posts</span>
+                  </div>
+                  <div class="metric">
+                    <mat-icon>web</mat-icon>
+                    <span>{{ metrics[project.id].pages }} páginas</span>
+                  </div>
+                  <div class="metric">
+                    <mat-icon>palette</mat-icon>
+                    <span>{{ metrics[project.id].theme }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- ACCIONES -->
+              <div class="card-actions">
+                @if (project.status === 'installed') {
+                  <button mat-stroked-button (click)="goToPanel(project.id)">
+                    <mat-icon>settings</mat-icon> Gestionar
+                  </button>
+                  @if (project.wp_admin_url) {
+                    <a mat-flat-button color="primary" [href]="project.wp_admin_url" target="_blank">
+                      <mat-icon>open_in_new</mat-icon> wp-admin
+                    </a>
+                  }
+                } @else if (project.status === 'pending') {
+                  <button mat-flat-button color="primary" (click)="goToInstall()">
+                    <mat-icon>download</mat-icon> Instalar WordPress
+                  </button>
+                } @else if (project.status === 'error') {
+                  <button mat-stroked-button color="warn" (click)="goToPanel(project.id)">
+                    <mat-icon>refresh</mat-icon> Reintentar
+                  </button>
                 }
-              </mat-card-actions>
-            </mat-card>
+              </div>
+
+            </div>
           }
         </div>
       }
     </section>
+
   </main>
 </div>
