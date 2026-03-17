@@ -12,6 +12,7 @@ app.use(express.json());
 // Rutas
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/projects', require('./routes/projects.routes'));
+app.use('/api/manage', require('./routes/wp-manager.routes'));
 app.use('/api/wordpress', require('./routes/wordpress.routes'));
 
 // Health check

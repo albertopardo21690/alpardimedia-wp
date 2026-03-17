@@ -1,1 +1,358 @@
-<p>detail works!</p>
+<div class="detail-wrapper">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <a mat-icon-button routerLink="/dashboard">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div class="header-info">
+      <h1>{{ project?.name || 'Proyecto' }}</h1>
+      <p>{{ project?.description }}</p>
+    </div>
+    @if (project?.wp_admin_url) {
+      <a mat-flat-button color="primary" [href]="getAdminUrl()" target="_blank">
+        <mat-icon>admin_panel_settings</mat-icon> wp-admin
+      </a>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="loading-center"><mat-spinner diameter="48" /></div>
+  } @else {
+
+    <!-- STATUS CARDS -->
+    <div class="status-bar">
+      <div class="status-chip" [class.active]="status?.installed">
+        <mat-icon>{{ status?.installed ? 'check_circle' : 'cancel' }}</mat-icon>
+        {{ status?.installed ? 'WordPress instalado' : 'No instalado' }}
+      </div>
+      @if (status?.installed) {
+        <div class="status-chip info">
+          <mat-icon>info</mat-icon> v{{ status?.version }}
+        </div>
+        <div class="status-chip info">
+          <mat-icon>link</mat-icon> {{ status?.url }}
+        </div>
+      }
+    </div>
+
+    <!-- MÉTRICAS -->
+    @if (metrics) {
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <mat-icon>article</mat-icon>
+          <span class="metric-num">{{ metrics.posts }}</span>
+          <span class="metric-label">Posts</span>
+        </div>
+        <div class="metric-card">
+          <mat-icon>web</mat-icon>
+          <span class="metric-num">{{ metrics.pages }}</span>
+          <span class="metric-label">Páginas</span>
+        </div>
+        <div class="metric-card">
+          <mat-icon>comment</mat-icon>
+          <span class="metric-num">{{ metrics.comments }}</span>
+          <span class="metric-label">Comentarios</span>
+        </div>
+        <div class="metric-card">
+          <mat-icon>palette</mat-icon>
+          <span class="metric-num theme-name">{{ metrics.theme }}</span>
+          <span class="metric-label">Tema activo</span>
+        </div>
+      </div>
+    }
+
+    <!-- TABS -->
+    <mat-tab-group (selectedIndexChange)="onTabChange($event)" class="detail-tabs">
+
+      <!-- TAB: PÁGINAS Y POSTS -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>web</mat-icon> Páginas
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-actions">
+            <button mat-flat-button color="primary" (click)="showNewPage = !showNewPage">
+              <mat-icon>add</mat-icon> Nueva página
+            </button>
+          </div>
+
+          @if (showNewPage) {
+            <mat-card class="form-card">
+              <mat-card-content>
+                <form [formGroup]="newPageForm" class="inline-form">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Título</mat-label>
+                    <input matInput formControlName="title">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Contenido</mat-label>
+                    <textarea matInput formControlName="content" rows="4"></textarea>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Estado</mat-label>
+                    <mat-select formControlName="status">
+                      <mat-option value="publish">Publicada</mat-option>
+                      <mat-option value="draft">Borrador</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="form-actions">
+                    <button mat-stroked-button (click)="showNewPage = false">Cancelar</button>
+                    <button mat-flat-button color="primary" (click)="createPage()" [disabled]="newPageForm.invalid">Crear</button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          @if (loadingPages) {
+            <div class="loading-center"><mat-spinner diameter="32" /></div>
+          } @else if (pages.length === 0) {
+            <div class="empty-tab">
+              <mat-icon>web</mat-icon>
+              <p>No hay páginas. Crea la primera.</p>
+            </div>
+          } @else {
+            <mat-table [dataSource]="pages" class="data-table">
+              <ng-container matColumnDef="title">
+                <mat-header-cell *matHeaderCellDef>Título</mat-header-cell>
+                <mat-cell *matCellDef="let p">{{ p.title?.rendered }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+                <mat-cell *matCellDef="let p">
+                  <span class="badge" [class]="p.status">{{ p.status }}</span>
+                </mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+                <mat-cell *matCellDef="let p">{{ p.date | date:'dd/MM/yyyy' }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let p">
+                  <a mat-icon-button [href]="p.link" target="_blank"><mat-icon>open_in_new</mat-icon></a>
+                </mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="pageCols"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: pageCols;"></mat-row>
+            </mat-table>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- TAB: PLUGINS -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>extension</mat-icon> Plugins
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-actions">
+            <button mat-flat-button color="primary" (click)="showNewPlugin = !showNewPlugin">
+              <mat-icon>add</mat-icon> Instalar plugin
+            </button>
+          </div>
+
+          @if (showNewPlugin) {
+            <mat-card class="form-card">
+              <mat-card-content>
+                <form [formGroup]="newPluginForm" class="inline-form horizontal">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Slug del plugin (ej: woocommerce)</mat-label>
+                    <input matInput formControlName="plugin">
+                  </mat-form-field>
+                  <div class="form-actions">
+                    <button mat-stroked-button (click)="showNewPlugin = false">Cancelar</button>
+                    <button mat-flat-button color="primary" (click)="installPlugin()" [disabled]="newPluginForm.invalid">Instalar</button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          @if (loadingPlugins) {
+            <div class="loading-center"><mat-spinner diameter="32" /></div>
+          } @else if (plugins.length === 0) {
+            <div class="empty-tab">
+              <mat-icon>extension</mat-icon>
+              <p>No hay plugins cargados.</p>
+            </div>
+          } @else {
+            <mat-table [dataSource]="plugins" class="data-table">
+              <ng-container matColumnDef="name">
+                <mat-header-cell *matHeaderCellDef>Plugin</mat-header-cell>
+                <mat-cell *matCellDef="let p">{{ p.name || p.plugin }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="status">
+                <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+                <mat-cell *matCellDef="let p">
+                  <span class="badge" [class]="p.status">{{ p.status }}</span>
+                </mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="version">
+                <mat-header-cell *matHeaderCellDef>Versión</mat-header-cell>
+                <mat-cell *matCellDef="let p">{{ p.version }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let p">
+                  <button mat-icon-button (click)="togglePlugin(p)" [title]="p.status === 'active' ? 'Desactivar' : 'Activar'">
+                    <mat-icon>{{ p.status === 'active' ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deletePlugin(p.name || p.plugin)" title="Eliminar">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="pluginCols"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: pluginCols;"></mat-row>
+            </mat-table>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- TAB: TEMAS -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>palette</mat-icon> Temas
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-actions">
+            <button mat-flat-button color="primary" (click)="showNewTheme = !showNewTheme">
+              <mat-icon>add</mat-icon> Instalar tema
+            </button>
+          </div>
+
+          @if (showNewTheme) {
+            <mat-card class="form-card">
+              <mat-card-content>
+                <form [formGroup]="newThemeForm" class="inline-form horizontal">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Slug del tema (ej: astra)</mat-label>
+                    <input matInput formControlName="theme">
+                  </mat-form-field>
+                  <div class="form-actions">
+                    <button mat-stroked-button (click)="showNewTheme = false">Cancelar</button>
+                    <button mat-flat-button color="primary" (click)="installTheme()" [disabled]="newThemeForm.invalid">Instalar</button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          @if (loadingThemes) {
+            <div class="loading-center"><mat-spinner diameter="32" /></div>
+          } @else {
+            <div class="themes-grid">
+              @for (theme of themes; track theme.name) {
+                <mat-card class="theme-card" [class.active]="theme.status === 'active'">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar>palette</mat-icon>
+                    <mat-card-title>{{ theme.name }}</mat-card-title>
+                    <mat-card-subtitle>v{{ theme.version }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-actions>
+                    @if (theme.status !== 'active') {
+                      <button mat-stroked-button color="primary" (click)="activateTheme(theme.name)">
+                        <mat-icon>check</mat-icon> Activar
+                      </button>
+                    } @else {
+                      <span class="active-badge"><mat-icon>check_circle</mat-icon> Activo</span>
+                    }
+                  </mat-card-actions>
+                </mat-card>
+              }
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- TAB: USUARIOS -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>people</mat-icon> Usuarios
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-actions">
+            <button mat-flat-button color="primary" (click)="showNewUser = !showNewUser">
+              <mat-icon>person_add</mat-icon> Nuevo usuario
+            </button>
+          </div>
+
+          @if (showNewUser) {
+            <mat-card class="form-card">
+              <mat-card-content>
+                <form [formGroup]="newUserForm" class="inline-form">
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Usuario</mat-label>
+                      <input matInput formControlName="username">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Email</mat-label>
+                      <input matInput formControlName="email" type="email">
+                    </mat-form-field>
+                  </div>
+                  <div class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Contraseña</mat-label>
+                      <input matInput formControlName="password" type="password">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Rol</mat-label>
+                      <mat-select formControlName="role">
+                        <mat-option value="administrator">Administrador</mat-option>
+                        <mat-option value="editor">Editor</mat-option>
+                        <mat-option value="author">Autor</mat-option>
+                        <mat-option value="subscriber">Suscriptor</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <div class="form-actions">
+                    <button mat-stroked-button (click)="showNewUser = false">Cancelar</button>
+                    <button mat-flat-button color="primary" (click)="createUser()" [disabled]="newUserForm.invalid">Crear</button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          }
+
+          @if (loadingUsers) {
+            <div class="loading-center"><mat-spinner diameter="32" /></div>
+          } @else if (users.length === 0) {
+            <div class="empty-tab">
+              <mat-icon>people</mat-icon>
+              <p>No hay usuarios cargados.</p>
+            </div>
+          } @else {
+            <mat-table [dataSource]="users" class="data-table">
+              <ng-container matColumnDef="login">
+                <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
+                <mat-cell *matCellDef="let u">{{ u.user_login }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="email">
+                <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
+                <mat-cell *matCellDef="let u">{{ u.user_email }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="roles">
+                <mat-header-cell *matHeaderCellDef>Rol</mat-header-cell>
+                <mat-cell *matCellDef="let u">{{ u.roles }}</mat-cell>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell *matCellDef="let u">
+                  <button mat-icon-button color="warn" (click)="deleteUser(u.ID)" title="Eliminar">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="userCols"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: userCols;"></mat-row>
+            </mat-table>
+          }
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+</div>
