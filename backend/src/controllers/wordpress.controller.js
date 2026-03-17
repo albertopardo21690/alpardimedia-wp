@@ -65,3 +65,42 @@ exports.status = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener estado' });
   }
 };
+
+// Validar conexión a BD
+exports.validateDb = async (req, res) => {
+  const { dbHost, dbUser, dbPassword, dbName } = req.body;
+  try {
+    const mysql = require('mysql2/promise');
+    const conn  = await mysql.createConnection({
+      host:     dbHost     || 'localhost',
+      user:     dbUser     || 'root',
+      password: dbPassword || '',
+    });
+    // Verificar si la BD ya existe
+    const [rows] = await conn.query(
+      `SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = ?`,
+      [dbName]
+    );
+    await conn.end();
+    res.json({
+      success:  true,
+      dbExists: rows.length > 0,
+      message:  rows.length > 0
+        ? `BD "${dbName}" ya existe — se usará tal cual`
+        : `Conexión correcta — se creará "${dbName}"`
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// Preview wp-config.php
+exports.previewConfig = async (req, res) => {
+  try {
+    const { generateWpConfig } = require('../services/wordpress/wpconfig.generator');
+    const content = generateWpConfig(req.body);
+    res.json({ content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

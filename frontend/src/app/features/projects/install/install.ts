@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,9 +10,21 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ProjectsService } from '../../../core/services/projects';
 import { WordpressService } from '../../../core/services/wordpress';
+import { UiService } from '../../../core/services/ui';
+import { HttpClient } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+
+interface InstallStep {
+  label: string;
+  icon:  string;
+  done:  boolean;
+}
 
 @Component({
   selector: 'app-install',
@@ -21,44 +33,78 @@ import { WordpressService } from '../../../core/services/wordpress';
     CommonModule, ReactiveFormsModule, RouterLink,
     MatStepperModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatSelectModule,
-    MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule
+    MatProgressSpinnerModule, MatProgressBarModule,
+    MatCheckboxModule, MatTooltipModule, MatChipsModule,
+    MatExpansionModule
   ],
   templateUrl: './install.html',
-  styleUrl: './install.scss'
+  styleUrl:    './install.scss'
 })
-export class InstallComponent {
+export class InstallComponent implements OnInit, OnDestroy {
+  private api     = 'http://localhost:3000/api/wordpress';
+  private destroy = new Subject<void>();
 
-  // PASO 1 — Datos del proyecto
   step1: FormGroup;
-  // PASO 2 — Base de datos
   step2: FormGroup;
-  // PASO 3 — Cuenta administrador
   step3: FormGroup;
-  // PASO 4 — Configuración inicial
   step4: FormGroup;
+  step5: FormGroup;
 
-  installing  = false;
-  installed   = false;
-  error       = '';
-  installLog: string[] = [];
-  result: any = null;
+  installing    = false;
+  installed     = false;
+  error         = '';
+  result: any   = null;
+  wpConfigPreview = '';
+  showPreview   = false;
+
+  // Validación BD
+  dbValidating  = false;
+  dbValid:      boolean | null = null;
+  dbMessage     = '';
+
+  // Progreso instalación
+  installSteps: InstallStep[] = [
+    { label: 'Creando proyecto',         icon: 'folder',        done: false },
+    { label: 'Descargando WordPress',    icon: 'download',      done: false },
+    { label: 'Extrayendo archivos',      icon: 'folder_zip',    done: false },
+    { label: 'Generando wp-config.php',  icon: 'settings',      done: false },
+    { label: 'Creando base de datos',    icon: 'storage',       done: false },
+    { label: 'Instalando WordPress',     icon: 'language',      done: false },
+    { label: 'Configuración inicial',    icon: 'tune',          done: false },
+  ];
+  currentStep   = -1;
+  progressValue = 0;
+
+  // Plugins populares
+  popularPlugins = [
+    { slug: 'woocommerce',          name: 'WooCommerce',        icon: 'shopping_cart' },
+    { slug: 'contact-form-7',       name: 'Contact Form 7',     icon: 'mail' },
+    { slug: 'yoast-seo',            name: 'Yoast SEO',          icon: 'search' },
+    { slug: 'wordfence',            name: 'Wordfence Security',  icon: 'security' },
+    { slug: 'wp-super-cache',       name: 'WP Super Cache',     icon: 'speed' },
+    { slug: 'elementor',            name: 'Elementor',          icon: 'web' },
+  ];
+  selectedPlugins: string[] = [];
+
+  languages = [
+    { value: 'es_ES', label: '🇪🇸 Español' },
+    { value: 'en_US', label: '🇺🇸 English' },
+    { value: 'ca',    label: '🏴󠁥󠁳󠁣󠁴󠁿 Català' },
+    { value: 'gl_ES', label: '🏴 Galego' },
+    { value: 'fr_FR', label: '🇫🇷 Français' },
+    { value: 'de_DE', label: '🇩🇪 Deutsch' },
+  ];
+
   hideAdminPassword = true;
   hideDbPassword    = true;
 
-  languages = [
-    { value: 'es_ES', label: 'Español' },
-    { value: 'en_US', label: 'English' },
-    { value: 'ca',    label: 'Català' },
-    { value: 'gl_ES', label: 'Galego' },
-    { value: 'fr_FR', label: 'Français' },
-    { value: 'de_DE', label: 'Deutsch' },
-  ];
-
   constructor(
-    private fb: FormBuilder,
+    private fb:              FormBuilder,
     private projectsService: ProjectsService,
-    private wpService: WordpressService,
-    private router: Router
+    private wpService:       WordpressService,
+    private ui:              UiService,
+    private http:            HttpClient,
+    private router:          Router
   ) {
     this.step1 = this.fb.group({
       name:        ['', Validators.required],
@@ -85,43 +131,180 @@ export class InstallComponent {
       language:        ['es_ES', Validators.required]
     });
 
-    // Auto-rellenar dbName cuando escriben el nombre del proyecto
-    this.step1.get('name')?.valueChanges.subscribe(val => {
+    this.step5 = this.fb.group({
+      installPlugins: [false]
+    });
+  }
+
+  ngOnInit() {
+    this.loadDraft();
+
+    // Auto-rellenar campos
+    this.step1.get('name')?.valueChanges.pipe(
+      takeUntil(this.destroy)
+    ).subscribe(val => {
       if (val) {
         const slug = val.toLowerCase().replace(/[^a-z0-9]/g, '_');
         this.step2.patchValue({ dbName: `wp_${slug}` });
         this.step4.patchValue({ siteName: val });
       }
     });
+
+    // Validación BD en tiempo real
+    this.step2.valueChanges.pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      takeUntil(this.destroy)
+    ).subscribe(() => {
+      if (this.step2.get('dbHost')?.valid && this.step2.get('dbUser')?.valid) {
+        this.validateDb();
+      }
+    });
   }
 
-  addLog(msg: string) {
-    this.installLog.push(msg);
+  ngOnDestroy() {
+    this.destroy.next();
+    this.destroy.complete();
+  }
+
+  // ============================================
+  // DRAFT
+  // ============================================
+  saveDraft() {
+    const draft = {
+      step1: this.step1.value,
+      step2: { ...this.step2.value, dbPassword: '' },
+      step3: { ...this.step3.value, adminPassword: '' },
+      step4: this.step4.value,
+      plugins: this.selectedPlugins
+    };
+    localStorage.setItem('wp_install_draft', JSON.stringify(draft));
+    this.ui.info('Borrador guardado');
+  }
+
+  loadDraft() {
+    const raw = localStorage.getItem('wp_install_draft');
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw);
+      if (draft.step1) this.step1.patchValue(draft.step1);
+      if (draft.step2) this.step2.patchValue(draft.step2);
+      if (draft.step3) this.step3.patchValue(draft.step3);
+      if (draft.step4) this.step4.patchValue(draft.step4);
+      if (draft.plugins) this.selectedPlugins = draft.plugins;
+    } catch {}
+  }
+
+  clearDraft() {
+    localStorage.removeItem('wp_install_draft');
+  }
+
+  // ============================================
+  // VALIDACIÓN BD
+  // ============================================
+  validateDb() {
+    this.dbValidating = true;
+    this.dbValid      = null;
+    this.http.post<any>(`${this.api}/validate-db`, this.step2.value, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    }).subscribe({
+      next: (res) => {
+        this.dbValidating = false;
+        this.dbValid      = res.success;
+        this.dbMessage    = res.message;
+      },
+      error: (err) => {
+        this.dbValidating = false;
+        this.dbValid      = false;
+        this.dbMessage    = err.error?.message || 'Error de conexión';
+      }
+    });
+  }
+
+  // ============================================
+  // GENERADOR DE CONTRASEÑA
+  // ============================================
+  generatePassword(field: 'adminPassword' | 'dbPassword') {
+    const chars  = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    const length = 16;
+    let pass = '';
+    for (let i = 0; i < length; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    if (field === 'adminPassword') {
+      this.step3.patchValue({ adminPassword: pass });
+      this.hideAdminPassword = false;
+    } else {
+      this.step2.patchValue({ dbPassword: pass });
+      this.hideDbPassword = false;
+    }
+    navigator.clipboard?.writeText(pass).then(() => this.ui.info('Contraseña copiada al portapapeles'));
+  }
+
+  // ============================================
+  // PREVIEW WP-CONFIG
+  // ============================================
+  loadPreview() {
+    this.showPreview = true;
+    this.http.post<any>(`${this.api}/preview-config`, {
+      ...this.step2.value,
+      ...this.step4.value,
+      ...this.step3.value,
+      projectId: 'preview'
+    }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    }).subscribe({
+      next:  (res) => { this.wpConfigPreview = res.content; },
+      error: ()    => { this.wpConfigPreview = '// Error al generar preview'; }
+    });
+  }
+
+  // ============================================
+  // PLUGINS
+  // ============================================
+  togglePlugin(slug: string) {
+    const idx = this.selectedPlugins.indexOf(slug);
+    if (idx > -1) this.selectedPlugins.splice(idx, 1);
+    else          this.selectedPlugins.push(slug);
+  }
+
+  isPluginSelected(slug: string): boolean {
+    return this.selectedPlugins.includes(slug);
+  }
+
+  // ============================================
+  // INSTALACIÓN
+  // ============================================
+  advanceStep(index: number) {
+    this.currentStep  = index;
+    this.progressValue = Math.round(((index + 1) / this.installSteps.length) * 100);
+    if (index > 0) this.installSteps[index - 1].done = true;
   }
 
   async install() {
-    if (this.step1.invalid || this.step2.invalid || this.step3.invalid || this.step4.invalid) return;
+    if ([this.step1, this.step2, this.step3, this.step4].some(s => s.invalid)) return;
 
     this.installing  = true;
     this.error       = '';
-    this.installLog  = [];
+    this.currentStep = 0;
+    this.progressValue = 0;
+    this.installSteps.forEach(s => s.done = false);
 
     try {
-      // PASO A — Crear proyecto en nuestra BD
-      this.addLog('📁 Creando proyecto...');
+      this.advanceStep(0);
       const project: any = await this.projectsService.create({
         name:        this.step1.value.name,
         description: this.step1.value.description
       }).toPromise();
 
-      this.addLog(`✅ Proyecto creado (ID: ${project.id})`);
-      this.addLog('⬇️  Descargando WordPress...');
-      this.addLog('📦 Extrayendo archivos...');
-      this.addLog('⚙️  Generando wp-config.php...');
-      this.addLog('🗄️  Creando base de datos...');
-      this.addLog('🏗️  Instalando WordPress...');
+      this.advanceStep(1);
+      await new Promise(r => setTimeout(r, 400));
+      this.advanceStep(2);
+      await new Promise(r => setTimeout(r, 400));
+      this.advanceStep(3);
+      await new Promise(r => setTimeout(r, 300));
+      this.advanceStep(4);
 
-      // PASO B — Instalar WordPress
       const result: any = await this.wpService.install({
         projectId: project.id,
         config: {
@@ -139,21 +322,24 @@ export class InstallComponent {
         }
       }).toPromise();
 
-      this.addLog('🔧 Configuración inicial...');
-      this.addLog('✅ ¡WordPress instalado correctamente!');
+      this.advanceStep(5);
+      await new Promise(r => setTimeout(r, 300));
+      this.advanceStep(6);
 
-      this.result    = result;
-      this.installed = true;
+      this.installSteps[6].done = true;
+      this.progressValue        = 100;
+      this.result               = result;
+      this.installed            = true;
+      this.clearDraft();
+      this.ui.success('WordPress instalado correctamente');
 
     } catch (err: any) {
       this.error = err.error?.error || 'Error durante la instalación';
-      this.addLog(`❌ Error: ${this.error}`);
+      this.ui.error(this.error);
     } finally {
       this.installing = false;
     }
   }
 
-  goToDashboard() {
-    this.router.navigate(['/dashboard']);
-  }
+  goToDashboard() { this.router.navigate(['/dashboard']); }
 }
