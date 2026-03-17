@@ -1,7 +1,11 @@
 const router = require('express').Router();
-const authController = require('../controllers/auth.controller');
+const { asyncHandler }     = require('../middleware/error.middleware');
+const { validate }         = require('../middleware/validate.middleware');
+const { authLimiter }      = require('../middleware/ratelimit.middleware');
+const { registerValidator, loginValidator } = require('../validators/auth.validators');
+const authController       = require('../controllers/auth.controller');
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', authLimiter, registerValidator, validate, asyncHandler(authController.register));
+router.post('/login',    authLimiter, loginValidator,    validate, asyncHandler(authController.login));
 
 module.exports = router;
