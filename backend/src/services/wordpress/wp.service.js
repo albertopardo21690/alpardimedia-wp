@@ -4,10 +4,11 @@ const path = require('path');
 const https = require('https');
 const { generateWpConfig } = require('./wpconfig.generator');
 
-const PHP     = process.env.PHP_BINARY   || 'php';
-const WP_CLI  = process.env.WP_CLI_PATH;
-const SITES   = process.env.WP_SITES_PATH;
-const BASE_URL = process.env.WP_BASE_URL || 'http://localhost';
+const PHP      = process.env.PHP_BINARY   || 'php';
+const WP_CLI   = process.env.WP_CLI_PATH;
+const SITES    = process.env.WP_SITES_PATH;
+const BASE_URL = process.env.WP_BASE_URL  || 'http://localhost';
+const MYSQL    = process.env.MYSQL_BINARY || 'mysql';
 
 // Ejecutar comando como promesa
 const run = (cmd) => new Promise((resolve, reject) => {
@@ -16,6 +17,13 @@ const run = (cmd) => new Promise((resolve, reject) => {
     resolve(stdout.trim());
   });
 });
+
+// WP-CLI con PATH de MySQL inyectado
+const wp = (sitePath, command) => {
+  const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
+  const env = `set PATH=${mysqlDir};%PATH% &&`;
+  return run(`${env} "${PHP}" "${WP_CLI}" ${command} --path="${sitePath}" --allow-root`);
+};
 
 // Descargar WordPress si no está en caché
 const downloadWordPress = () => new Promise((resolve, reject) => {
@@ -35,24 +43,21 @@ const downloadWordPress = () => new Promise((resolve, reject) => {
     res.pipe(file);
     file.on('finish', () => { file.close(); resolve(cacheFile); });
   }).on('error', (err) => {
-    fs.unlinkSync(cacheFile);
+    try { fs.unlinkSync(cacheFile); } catch {}
     reject(err);
   });
 });
 
-// Descomprimir WordPress en la carpeta del proyecto
+// Descomprimir WordPress
 const extractWordPress = async (zipFile, sitePath) => {
-  const cacheDir    = path.join(path.dirname(SITES), 'cache');
-  const extractPath = path.join(cacheDir, 'wordpress-extracted');
-
-  // Descomprimir con WP-CLI helper o PowerShell
-  const cmd = `powershell -Command "Expand-Archive -Path '${zipFile}' -DestinationPath '${cacheDir}' -Force"`;
-  await run(cmd);
-
-  // Copiar archivos al sitePath
-  fs.mkdirSync(sitePath, { recursive: true });
+  const cacheDir = path.join(path.dirname(SITES), 'cache');
   const wpSource = path.join(cacheDir, 'wordpress');
-  const copyCmd  = `powershell -Command "Copy-Item -Path '${wpSource}\\*' -Destination '${sitePath}' -Recurse -Force"`;
+
+  const extractCmd = `powershell -Command "Expand-Archive -Path '${zipFile}' -DestinationPath '${cacheDir}' -Force"`;
+  await run(extractCmd);
+
+  fs.mkdirSync(sitePath, { recursive: true });
+  const copyCmd = `powershell -Command "Copy-Item -Path '${wpSource}\\*' -Destination '${sitePath}' -Recurse -Force"`;
   await run(copyCmd);
 
   console.log('📂 WordPress extraído en', sitePath);
@@ -63,7 +68,7 @@ exports.install = async (projectId, config) => {
   const sitePath = path.join(SITES, `project-${projectId}`);
   const siteUrl  = `${BASE_URL}/proyectos/alpardimedia-wp/sites/project-${projectId}`;
 
-  // PASO 1 — Descargar y extraer WordPress
+  // PASO 1 — Descargar y extraer
   console.log('🔽 PASO 1: Descargando WordPress...');
   const zipFile = await downloadWordPress();
   await extractWordPress(zipFile, sitePath);
@@ -75,10 +80,11 @@ exports.install = async (projectId, config) => {
 
   // PASO 3 — Crear base de datos
   console.log('🗄️  PASO 3: Creando base de datos...');
-  const createDbCmd = `"${PHP}" "${WP_CLI}" db create --path="${sitePath}" --allow-root`;
+  const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
+  const createDbCmd = `set PATH=${mysqlDir};%PATH% && "${PHP}" "${WP_CLI}" db create --path="${sitePath}" --allow-root`;
   await run(createDbCmd);
 
-  // PASO 4 — Instalar WordPress (crea tablas + admin + datos iniciales)
+  // PASO 4 — Instalar WordPress
   console.log('🏗️  PASO 4: Instalando WordPress...');
   const installCmd = [
     `"${PHP}" "${WP_CLI}" core install`,
@@ -92,43 +98,43 @@ exports.install = async (projectId, config) => {
     `--skip-email`,
     `--allow-root`
   ].join(' ');
-  await run(installCmd);
+  await wp(sitePath, `core install --url="${siteUrl}" --title="${config.siteName}" --admin_user="${config.adminUser}" --admin_password="${config.adminPassword}" --admin_email="${config.adminEmail}" --locale="${config.language || 'es_ES'}" --skip-email`);
 
   // PASO 5 — Configuración inicial
   console.log('🔧 PASO 5: Configuración inicial...');
-  await run(`"${PHP}" "${WP_CLI}" option update blogdescription "${config.siteDescription || ''}" --path="${sitePath}" --allow-root`);
-  await run(`"${PHP}" "${WP_CLI}" option update timezone_string "Europe/Madrid" --path="${sitePath}" --allow-root`);
+  await wp(sitePath, `option update blogdescription "${config.siteDescription || ''}"`);
+  await wp(sitePath, `option update timezone_string "Europe/Madrid"`);
 
   console.log('✅ WordPress instalado correctamente');
 
   return {
     path: sitePath,
-    url: siteUrl,
+    url:      siteUrl,
     adminUrl: `${siteUrl}/wp-admin`,
-    status: 'installed'
+    status:   'installed'
   };
 };
 
-// Desinstalación completa
-exports.uninstall = async (sitePath, dbName) => {
+// Desinstalación
+exports.uninstall = async (sitePath) => {
   if (sitePath && fs.existsSync(sitePath)) {
-    // Eliminar base de datos
     try {
-      await run(`"${PHP}" "${WP_CLI}" db drop --yes --path="${sitePath}" --allow-root`);
+      const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
+      await run(`set PATH=${mysqlDir};%PATH% && "${PHP}" "${WP_CLI}" db drop --yes --path="${sitePath}" --allow-root`);
     } catch (e) {
       console.warn('⚠️  No se pudo eliminar la BD:', e.message);
     }
-    // Eliminar archivos
     fs.rmSync(sitePath, { recursive: true, force: true });
     console.log('🗑️  WordPress eliminado:', sitePath);
   }
 };
 
-// Estado del sitio
+// Estado
 exports.getStatus = async (sitePath) => {
   if (!sitePath || !fs.existsSync(sitePath)) return 'not_found';
   try {
-    const result = await run(`"${PHP}" "${WP_CLI}" core is-installed --path="${sitePath}" --allow-root`);
+    const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
+    await run(`set PATH=${mysqlDir};%PATH% && "${PHP}" "${WP_CLI}" core is-installed --path="${sitePath}" --allow-root`);
     return 'installed';
   } catch {
     return 'pending';
