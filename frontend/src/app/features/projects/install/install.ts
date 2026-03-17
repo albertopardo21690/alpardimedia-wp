@@ -18,6 +18,7 @@ import { ProjectsService } from '../../../core/services/projects';
 import { WordpressService } from '../../../core/services/wordpress';
 import { UiService } from '../../../core/services/ui';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 interface InstallStep {
@@ -41,7 +42,7 @@ interface InstallStep {
   styleUrl:    './install.scss'
 })
 export class InstallComponent implements OnInit, OnDestroy {
-  private api     = 'http://localhost:3000/api/wordpress';
+  private api     = environment.apiUrl + '/wordpress';
   private destroy = new Subject<void>();
 
   step1: FormGroup;

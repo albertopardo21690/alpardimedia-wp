@@ -2,13 +2,14 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface User { id: number; name: string; email: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api/auth';
-  currentUser = signal<User | null>(null);
+  private apiUrl = `${environment.apiUrl}/auth`;
+  currentUser    = signal<User | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {
     const stored = localStorage.getItem('user');
@@ -34,9 +35,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
-  }
+  isLoggedIn(): boolean { return !!localStorage.getItem('token'); }
 
   private saveSession(res: { token: string; user: User }) {
     localStorage.setItem('token', res.token);
