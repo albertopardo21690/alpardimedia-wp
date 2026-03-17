@@ -1,0 +1,311 @@
+<div class="install-wrapper">
+
+  <!-- HEADER -->
+  <div class="install-header">
+    <a mat-icon-button routerLink="/dashboard">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>Nuevo proyecto WordPress</h1>
+      <p>Completa el formulario para instalar WordPress automáticamente</p>
+    </div>
+  </div>
+
+  <!-- STEPPER -->
+  @if (!installed) {
+    <mat-stepper linear #stepper orientation="horizontal" class="install-stepper">
+
+      <!-- PASO 1: PROYECTO -->
+      <mat-step [stepControl]="step1" label="Proyecto">
+        <div class="step-content">
+          <div class="step-icon">
+            <mat-icon>folder_open</mat-icon>
+          </div>
+          <h2>Datos del proyecto</h2>
+          <p>Ponle nombre a tu nuevo proyecto WordPress</p>
+
+          <form [formGroup]="step1">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del proyecto</mat-label>
+              <input matInput formControlName="name" placeholder="Mi tienda online">
+              <mat-icon matPrefix>label</mat-icon>
+              @if (step1.get('name')?.hasError('required') && step1.get('name')?.touched) {
+                <mat-error>El nombre es obligatorio</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Descripción (opcional)</mat-label>
+              <textarea matInput formControlName="description" rows="3" placeholder="Breve descripción del proyecto"></textarea>
+              <mat-icon matPrefix>description</mat-icon>
+            </mat-form-field>
+          </form>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext [disabled]="step1.invalid">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- PASO 2: BASE DE DATOS -->
+      <mat-step [stepControl]="step2" label="Base de datos">
+        <div class="step-content">
+          <div class="step-icon db">
+            <mat-icon>storage</mat-icon>
+          </div>
+          <h2>Configuración de base de datos</h2>
+          <p>Datos de conexión MySQL para este WordPress</p>
+
+          <form [formGroup]="step2">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre de la BD</mat-label>
+                <input matInput formControlName="dbName" placeholder="wp_miproyecto">
+                <mat-icon matPrefix>database</mat-icon>
+                @if (step2.get('dbName')?.hasError('required') && step2.get('dbName')?.touched) {
+                  <mat-error>El nombre de BD es obligatorio</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Prefijo de tablas</mat-label>
+                <input matInput formControlName="dbPrefix" placeholder="wp_">
+                <mat-icon matPrefix>tag</mat-icon>
+                @if (step2.get('dbPrefix')?.hasError('pattern')) {
+                  <mat-error>Solo letras y guión bajo</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Usuario MySQL</mat-label>
+                <input matInput formControlName="dbUser">
+                <mat-icon matPrefix>person</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Contraseña MySQL</mat-label>
+                <input matInput formControlName="dbPassword" [type]="hideDbPassword ? 'password' : 'text'">
+                <mat-icon matPrefix>lock</mat-icon>
+                <button mat-icon-button matSuffix type="button" (click)="hideDbPassword = !hideDbPassword">
+                  <mat-icon>{{ hideDbPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Host MySQL</mat-label>
+              <input matInput formControlName="dbHost">
+              <mat-icon matPrefix>dns</mat-icon>
+            </mat-form-field>
+          </form>
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon> Anterior
+            </button>
+            <button mat-flat-button color="primary" matStepperNext [disabled]="step2.invalid">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- PASO 3: ADMIN -->
+      <mat-step [stepControl]="step3" label="Administrador">
+        <div class="step-content">
+          <div class="step-icon admin">
+            <mat-icon>admin_panel_settings</mat-icon>
+          </div>
+          <h2>Cuenta de administrador</h2>
+          <p>Credenciales para acceder a wp-admin</p>
+
+          <form [formGroup]="step3">
+            <mat-form-field appearance="outline">
+              <mat-label>Usuario administrador</mat-label>
+              <input matInput formControlName="adminUser">
+              <mat-icon matPrefix>manage_accounts</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Contraseña administrador</mat-label>
+              <input matInput formControlName="adminPassword" [type]="hideAdminPassword ? 'password' : 'text'">
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="hideAdminPassword = !hideAdminPassword">
+                <mat-icon>{{ hideAdminPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (step3.get('adminPassword')?.hasError('minlength')) {
+                <mat-error>Mínimo 8 caracteres</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Email administrador</mat-label>
+              <input matInput formControlName="adminEmail" type="email">
+              <mat-icon matPrefix>email</mat-icon>
+              @if (step3.get('adminEmail')?.hasError('email')) {
+                <mat-error>Email no válido</mat-error>
+              }
+            </mat-form-field>
+          </form>
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon> Anterior
+            </button>
+            <button mat-flat-button color="primary" matStepperNext [disabled]="step3.invalid">
+              Siguiente <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- PASO 4: CONFIGURACIÓN -->
+      <mat-step [stepControl]="step4" label="Configuración">
+        <div class="step-content">
+          <div class="step-icon config">
+            <mat-icon>tune</mat-icon>
+          </div>
+          <h2>Configuración del sitio</h2>
+          <p>Personaliza tu instalación de WordPress</p>
+
+          <form [formGroup]="step4">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del sitio</mat-label>
+              <input matInput formControlName="siteName">
+              <mat-icon matPrefix>language</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Descripción del sitio</mat-label>
+              <input matInput formControlName="siteDescription" placeholder="Just another WordPress site">
+              <mat-icon matPrefix>short_text</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Idioma</mat-label>
+              <mat-select formControlName="language">
+                @for (lang of languages; track lang.value) {
+                  <mat-option [value]="lang.value">{{ lang.label }}</mat-option>
+                }
+              </mat-select>
+              <mat-icon matPrefix>translate</mat-icon>
+            </mat-form-field>
+          </form>
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious>
+              <mat-icon>arrow_back</mat-icon> Anterior
+            </button>
+            <button mat-flat-button color="primary" matStepperNext [disabled]="step4.invalid">
+              Revisar <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- PASO 5: RESUMEN + INSTALAR -->
+      <mat-step label="Instalar">
+        <div class="step-content">
+          <div class="step-icon summary">
+            <mat-icon>rocket_launch</mat-icon>
+          </div>
+          <h2>Resumen de instalación</h2>
+          <p>Revisa los datos antes de instalar</p>
+
+          <div class="summary-grid">
+            <div class="summary-section">
+              <h3><mat-icon>folder</mat-icon> Proyecto</h3>
+              <div class="summary-item"><span>Nombre</span><strong>{{ step1.value.name }}</strong></div>
+            </div>
+            <div class="summary-section">
+              <h3><mat-icon>storage</mat-icon> Base de datos</h3>
+              <div class="summary-item"><span>BD</span><strong>{{ step2.value.dbName }}</strong></div>
+              <div class="summary-item"><span>Host</span><strong>{{ step2.value.dbHost }}</strong></div>
+              <div class="summary-item"><span>Prefijo</span><strong>{{ step2.value.dbPrefix }}</strong></div>
+            </div>
+            <div class="summary-section">
+              <h3><mat-icon>admin_panel_settings</mat-icon> Administrador</h3>
+              <div class="summary-item"><span>Usuario</span><strong>{{ step3.value.adminUser }}</strong></div>
+              <div class="summary-item"><span>Email</span><strong>{{ step3.value.adminEmail }}</strong></div>
+            </div>
+            <div class="summary-section">
+              <h3><mat-icon>tune</mat-icon> Sitio</h3>
+              <div class="summary-item"><span>Nombre</span><strong>{{ step4.value.siteName }}</strong></div>
+              <div class="summary-item"><span>Idioma</span><strong>{{ step4.value.language }}</strong></div>
+            </div>
+          </div>
+
+          @if (installing) {
+            <div class="install-progress">
+              <mat-progress-bar mode="indeterminate" />
+              <div class="install-log">
+                @for (log of installLog; track $index) {
+                  <div class="log-line">{{ log }}</div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (error) {
+            <div class="install-error">
+              <mat-icon>error_outline</mat-icon>
+              {{ error }}
+            </div>
+          }
+
+          <div class="step-actions">
+            <button mat-stroked-button matStepperPrevious [disabled]="installing">
+              <mat-icon>arrow_back</mat-icon> Anterior
+            </button>
+            <button mat-flat-button color="primary" (click)="install()" [disabled]="installing">
+              @if (installing) {
+                <mat-spinner diameter="20" />
+                Instalando...
+              } @else {
+                <ng-container>
+                  <mat-icon>rocket_launch</mat-icon>
+                  Instalar WordPress
+                </ng-container>
+              }
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+    </mat-stepper>
+
+  } @else {
+
+    <!-- ÉXITO -->
+    <div class="success-card">
+      <div class="success-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h2>¡WordPress instalado! 🎉</h2>
+      <p>Tu sitio está listo y funcionando</p>
+
+      <div class="success-links">
+        @if (result?.url) {
+          <a mat-stroked-button [href]="result.url" target="_blank">
+            <mat-icon>language</mat-icon> Ver sitio
+          </a>
+        }
+        @if (result?.adminUrl) {
+          <a mat-flat-button color="primary" [href]="result.adminUrl" target="_blank">
+            <mat-icon>admin_panel_settings</mat-icon> Ir a wp-admin
+          </a>
+        }
+      </div>
+
+      <button mat-button (click)="goToDashboard()" class="back-btn">
+        <mat-icon>dashboard</mat-icon> Volver al dashboard
+      </button>
+    </div>
+
+  }
+
+</div>

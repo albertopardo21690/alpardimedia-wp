@@ -1,0 +1,117 @@
+<div class="dashboard-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <mat-icon>language</mat-icon>
+      <span>Alpardimedia</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" class="nav-item active">
+        <mat-icon>dashboard</mat-icon> Dashboard
+      </a>
+      <a routerLink="/projects" class="nav-item">
+        <mat-icon>folder</mat-icon> Proyectos
+      </a>
+      <a routerLink="/projects/install" class="nav-item">
+        <mat-icon>add_circle</mat-icon> Nuevo proyecto
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ user()?.name }}</span>
+      </div>
+      <button mat-icon-button (click)="logout()" title="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="main-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Bienvenido, {{ user()?.name }} 👋</p>
+      </div>
+      <a mat-flat-button color="primary" routerLink="/projects/install">
+        <mat-icon>add</mat-icon> Nuevo proyecto
+      </a>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <mat-icon>folder</mat-icon>
+        <div>
+          <span class="stat-number">{{ projects.length }}</span>
+          <span class="stat-label">Proyectos totales</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <mat-icon class="installed">check_circle</mat-icon>
+        <div>
+          <span class="stat-number">{{ projects | statusCount:'installed' }}</span>
+          <span class="stat-label">WordPress instalados</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <mat-icon class="pending">schedule</mat-icon>
+        <div>
+          <span class="stat-number">{{ projects | statusCount:'pending' }}</span>
+          <span class="stat-label">Pendientes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROYECTOS -->
+    <section class="projects-section">
+      <h2>Mis proyectos</h2>
+
+      @if (loading) {
+        <div class="loading-center">
+          <mat-spinner diameter="40" />
+        </div>
+      } @else if (projects.length === 0) {
+        <div class="empty-state">
+          <mat-icon>rocket_launch</mat-icon>
+          <h3>Sin proyectos aún</h3>
+          <p>Crea tu primer proyecto WordPress ahora</p>
+          <a mat-flat-button color="primary" routerLink="/projects/install">Crear proyecto</a>
+        </div>
+      } @else {
+        <div class="projects-grid">
+          @for (project of projects; track project.id) {
+            <mat-card class="project-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>language</mat-icon>
+                <mat-card-title>{{ project.name }}</mat-card-title>
+                <mat-card-subtitle>{{ project.description }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="project-status">
+                  <mat-icon [class]="project.status">{{ getStatusIcon(project.status) }}</mat-icon>
+                  <span>{{ getStatusLabel(project.status) }}</span>
+                </div>
+                @if (project.wp_url) {
+                  <p class="project-url">{{ project.wp_url }}</p>
+                }
+              </mat-card-content>
+              <mat-card-actions>
+                <a mat-button [routerLink]="['/projects', project.id]">
+                  <mat-icon>settings</mat-icon> Gestionar
+                </a>
+                @if (project.wp_admin_url) {
+                  <a mat-button color="primary" [href]="project.wp_admin_url" target="_blank">
+                    <mat-icon>open_in_new</mat-icon> WP Admin
+                  </a>
+                }
+              </mat-card-actions>
+            </mat-card>
+          }
+        </div>
+      }
+    </section>
+  </main>
+</div>
