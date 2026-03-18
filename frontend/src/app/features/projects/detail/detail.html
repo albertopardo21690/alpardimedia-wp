@@ -1,348 +1,434 @@
-<div class="detail-wrapper">
+<div class="min-h-screen bg-slate-50">
 
   <!-- HEADER -->
-  <div class="detail-header fade-in-up">
-    <a mat-icon-button routerLink="/dashboard" matTooltip="Volver al dashboard">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div class="header-info">
-      <h1>{{ project?.name || 'Proyecto' }}</h1>
-      <p>{{ project?.description || 'Panel de gestión WordPress' }}</p>
-    </div>
-    @if (project?.wp_admin_url) {
-      <a mat-flat-button color="primary" [href]="getAdminUrl()" target="_blank">
-        <mat-icon>admin_panel_settings</mat-icon> wp-admin
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
+      <a routerLink="/dashboard"
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex-shrink-0">
+        <i class="bi bi-arrow-left text-base"></i>
       </a>
-    }
-  </div>
-
-  @if (loading) {
-    <div class="loading-center"><mat-spinner diameter="48" /></div>
-  } @else {
-
-    <!-- STATUS BAR -->
-    <div class="status-bar fade-in-up">
-      <div class="status-chip" [class.active]="status?.installed">
-        <div class="dot"></div>
-        {{ status?.installed ? 'WordPress instalado' : 'No instalado' }}
+      <div class="flex-1 min-w-0">
+        <h1 class="font-heading text-xl font-bold text-slate-900 truncate">{{ project?.name || 'Proyecto' }}</h1>
+        <p class="text-slate-500 text-xs truncate">{{ project?.description || 'Panel de gestión WordPress' }}</p>
       </div>
-      @if (status?.installed) {
-        <div class="status-chip info">v{{ status?.version }}</div>
-        <div class="status-chip info">{{ status?.url }}</div>
+      @if (project?.wp_admin_url) {
+        <a [href]="getAdminUrl()" target="_blank"
+          class="flex items-center gap-2 px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors shadow-sm flex-shrink-0">
+          <i class="bi bi-person-gear"></i>
+          <span class="hidden sm:inline">wp-admin</span>
+        </a>
       }
     </div>
+  </div>
 
-    <!-- MÉTRICAS -->
-    @if (metrics) {
-      <div class="metrics-grid fade-in-up">
-        <div class="metric-card">
-          <div class="metric-icon"><mat-icon>article</mat-icon></div>
-          <span class="metric-num">{{ metrics.posts }}</span>
-          <span class="metric-label">Posts</span>
+  <div class="max-w-5xl mx-auto px-4 py-6">
+
+    @if (loading) {
+      <div class="flex justify-center py-20">
+        <div class="w-10 h-10 border-4 border-slate-200 border-t-primary-800 rounded-full animate-spin"></div>
+      </div>
+    } @else {
+
+      <!-- STATUS BAR -->
+      <div class="flex items-center gap-2 mb-6 flex-wrap">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+             [ngClass]="status?.installed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                [ngClass]="status?.installed ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+          {{ status?.installed ? 'WordPress instalado' : 'No instalado' }}
         </div>
-        <div class="metric-card">
-          <div class="metric-icon"><mat-icon>web</mat-icon></div>
-          <span class="metric-num">{{ metrics.pages }}</span>
-          <span class="metric-label">Páginas</span>
+        @if (status?.installed) {
+          <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            <i class="bi bi-wordpress mr-1"></i> v{{ status?.version }}
+          </span>
+          @if (status?.url) {
+            <a [href]="status?.url" target="_blank"
+               class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors">
+              <i class="bi bi-box-arrow-up-right"></i>
+              <span class="truncate max-w-48">{{ status?.url }}</span>
+            </a>
+          }
+        }
+      </div>
+
+      <!-- MÉTRICAS -->
+      @if (metrics) {
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-3">
+              <i class="bi bi-file-text text-slate-500 text-lg"></i>
+            </div>
+            <p class="font-heading text-2xl font-bold text-slate-900">{{ metrics.posts }}</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Posts</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-3">
+              <i class="bi bi-layout-text-window text-slate-500 text-lg"></i>
+            </div>
+            <p class="font-heading text-2xl font-bold text-slate-900">{{ metrics.pages }}</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Páginas</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-3">
+              <i class="bi bi-chat-left-text text-slate-500 text-lg"></i>
+            </div>
+            <p class="font-heading text-2xl font-bold text-slate-900">{{ metrics.comments }}</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Comentarios</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center mb-3">
+              <i class="bi bi-palette text-slate-500 text-lg"></i>
+            </div>
+            <p class="font-heading text-sm font-bold text-primary-700 truncate">{{ metrics.theme }}</p>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">Tema activo</p>
+          </div>
         </div>
-        <div class="metric-card">
-          <div class="metric-icon"><mat-icon>comment</mat-icon></div>
-          <span class="metric-num">{{ metrics.comments }}</span>
-          <span class="metric-label">Comentarios</span>
+      }
+
+      <!-- TABS -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+        <!-- TAB HEADERS -->
+        <div class="flex border-b border-slate-100 overflow-x-auto">
+          @for (tab of tabs; track tab.id; let i = $index) {
+            <button (click)="activeTab = tab.id"
+              class="flex items-center gap-2 px-5 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-colors flex-shrink-0"
+              [ngClass]="activeTab === tab.id
+                ? 'border-primary-800 text-primary-800'
+                : 'border-transparent text-slate-500 hover:text-slate-700'">
+              <i [class]="'bi bi-' + tab.icon + ' text-base'"></i>
+              {{ tab.label }}
+            </button>
+          }
         </div>
-        <div class="metric-card">
-          <div class="metric-icon"><mat-icon>palette</mat-icon></div>
-          <span class="metric-num theme-name">{{ metrics.theme }}</span>
-          <span class="metric-label">Tema activo</span>
+
+        <!-- TAB CONTENT -->
+        <div class="p-6">
+
+          <!-- PÁGINAS -->
+          @if (activeTab === 'pages') {
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-heading text-lg font-bold text-slate-900">Páginas del sitio</h3>
+              <button (click)="showNewPage = !showNewPage"
+                class="flex items-center gap-2 px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors">
+                <i class="bi bi-plus-lg"></i> Nueva página
+              </button>
+            </div>
+
+            @if (showNewPage) {
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5">
+                <form [formGroup]="newPageForm" class="space-y-3">
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Título</label>
+                    <input formControlName="title"
+                      class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contenido</label>
+                    <textarea formControlName="content" rows="4"
+                      class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all resize-none"></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
+                    <select formControlName="status"
+                      class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 bg-white">
+                      <option value="publish">Publicada</option>
+                      <option value="draft">Borrador</option>
+                    </select>
+                  </div>
+                  <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" (click)="showNewPage=false"
+                      class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                      Cancelar
+                    </button>
+                    <button type="button" (click)="createPage()" [disabled]="newPageForm.invalid"
+                      class="px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40 transition-colors">
+                      Crear página
+                    </button>
+                  </div>
+                </form>
+              </div>
+            }
+
+            @if (loadingPages) {
+              <div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-slate-200 border-t-primary-800 rounded-full animate-spin"></div></div>
+            } @else if (pages.length === 0) {
+              <div class="text-center py-12">
+                <i class="bi bi-layout-text-window text-4xl text-slate-300"></i>
+                <p class="text-slate-400 text-sm mt-3">No hay páginas. Crea la primera.</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 border-y border-slate-100">
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Título</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                      <th class="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50">
+                    @for (p of pages; track p.id) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-4 py-3 font-semibold text-slate-800">{{ p.title?.rendered }}</td>
+                        <td class="px-4 py-3">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                [ngClass]="p.status === 'publish' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'">
+                            {{ p.status === 'publish' ? 'Publicada' : 'Borrador' }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-400">{{ p.date | date:'dd/MM/yyyy' }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <a [href]="p.link" target="_blank"
+                            class="text-slate-400 hover:text-primary-700 transition-colors">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
+          <!-- PLUGINS -->
+          @if (activeTab === 'plugins') {
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-heading text-lg font-bold text-slate-900">Plugins instalados</h3>
+              <button (click)="showNewPlugin = !showNewPlugin"
+                class="flex items-center gap-2 px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors">
+                <i class="bi bi-plus-lg"></i> Instalar plugin
+              </button>
+            </div>
+
+            @if (showNewPlugin) {
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5">
+                <form [formGroup]="newPluginForm" class="flex gap-3 items-end flex-wrap">
+                  <div class="flex-1 min-w-48">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Slug del plugin (ej: woocommerce)</label>
+                    <input formControlName="plugin"
+                      class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="button" (click)="showNewPlugin=false"
+                      class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="button" (click)="installPlugin()" [disabled]="newPluginForm.invalid"
+                      class="px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40">Instalar</button>
+                  </div>
+                </form>
+              </div>
+            }
+
+            @if (loadingPlugins) {
+              <div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-slate-200 border-t-primary-800 rounded-full animate-spin"></div></div>
+            } @else if (plugins.length === 0) {
+              <div class="text-center py-12">
+                <i class="bi bi-puzzle text-4xl text-slate-300"></i>
+                <p class="text-slate-400 text-sm mt-3">No hay plugins instalados.</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 border-y border-slate-100">
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Plugin</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Versión</th>
+                      <th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50">
+                    @for (p of plugins; track p.plugin) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-4 py-3 font-semibold text-slate-800">{{ p.name || p.plugin }}</td>
+                        <td class="px-4 py-3">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                [ngClass]="p.status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+                            {{ p.status === 'active' ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-slate-400">{{ p.version }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end gap-2">
+                            <button (click)="togglePlugin(p)"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                              [title]="p.status === 'active' ? 'Desactivar' : 'Activar'">
+                              <i [class]="p.status === 'active' ? 'bi bi-toggle-on text-primary-700' : 'bi bi-toggle-off text-slate-400'" class="text-lg"></i>
+                            </button>
+                            <button (click)="deletePlugin(p.name || p.plugin)"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-500 transition-colors"
+                              title="Eliminar">
+                              <i class="bi bi-trash text-sm"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
+          <!-- TEMAS -->
+          @if (activeTab === 'themes') {
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-heading text-lg font-bold text-slate-900">Temas instalados</h3>
+              <button (click)="showNewTheme = !showNewTheme"
+                class="flex items-center gap-2 px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors">
+                <i class="bi bi-plus-lg"></i> Instalar tema
+              </button>
+            </div>
+
+            @if (showNewTheme) {
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5">
+                <form [formGroup]="newThemeForm" class="flex gap-3 items-end flex-wrap">
+                  <div class="flex-1 min-w-48">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Slug del tema (ej: astra)</label>
+                    <input formControlName="theme"
+                      class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                  </div>
+                  <div class="flex gap-2">
+                    <button type="button" (click)="showNewTheme=false"
+                      class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="button" (click)="installTheme()" [disabled]="newThemeForm.invalid"
+                      class="px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40">Instalar</button>
+                  </div>
+                </form>
+              </div>
+            }
+
+            @if (loadingThemes) {
+              <div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-slate-200 border-t-primary-800 rounded-full animate-spin"></div></div>
+            } @else {
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                @for (theme of themes; track theme.name) {
+                  <div class="rounded-2xl border-2 overflow-hidden transition-all"
+                       [ngClass]="theme.status === 'active' ? 'border-primary-800 bg-primary-50' : 'border-slate-200 bg-white hover:border-primary-300'">
+                    <div class="h-24 flex items-center justify-center"
+                         [ngClass]="theme.status === 'active' ? 'bg-primary-100' : 'bg-slate-100'">
+                      <i class="bi bi-palette text-3xl"
+                         [ngClass]="theme.status === 'active' ? 'text-primary-700' : 'text-slate-400'"></i>
+                    </div>
+                    <div class="p-3">
+                      <p class="font-bold text-slate-900 text-sm truncate">{{ theme.name }}</p>
+                      <p class="text-xs text-slate-400 mt-0.5">v{{ theme.version }}</p>
+                      <div class="mt-2">
+                        @if (theme.status === 'active') {
+                          <span class="inline-flex items-center gap-1 text-xs font-bold text-primary-700">
+                            <i class="bi bi-check-circle-fill"></i> Activo
+                          </span>
+                        } @else {
+                          <button (click)="activateTheme(theme.name)"
+                            class="w-full py-1.5 text-xs font-bold border border-primary-800 text-primary-800 rounded-lg hover:bg-primary-50 transition-colors">
+                            Activar
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- USUARIOS -->
+          @if (activeTab === 'users') {
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-heading text-lg font-bold text-slate-900">Usuarios del sitio</h3>
+              <button (click)="showNewUser = !showNewUser"
+                class="flex items-center gap-2 px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors">
+                <i class="bi bi-person-plus"></i> Nuevo usuario
+              </button>
+            </div>
+
+            @if (showNewUser) {
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5">
+                <form [formGroup]="newUserForm" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Usuario</label>
+                      <input formControlName="username"
+                        class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email</label>
+                      <input formControlName="email" type="email"
+                        class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña</label>
+                      <input formControlName="password" type="password"
+                        class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-slate-700 mb-1.5">Rol</label>
+                      <select formControlName="role"
+                        class="w-full h-10 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 bg-white">
+                        <option value="administrator">Administrador</option>
+                        <option value="editor">Editor</option>
+                        <option value="author">Autor</option>
+                        <option value="subscriber">Suscriptor</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" (click)="showNewUser=false"
+                      class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="button" (click)="createUser()" [disabled]="newUserForm.invalid"
+                      class="px-4 py-2 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40">Crear</button>
+                  </div>
+                </form>
+              </div>
+            }
+
+            @if (loadingUsers) {
+              <div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-slate-200 border-t-primary-800 rounded-full animate-spin"></div></div>
+            } @else if (users.length === 0) {
+              <div class="text-center py-12">
+                <i class="bi bi-people text-4xl text-slate-300"></i>
+                <p class="text-slate-400 text-sm mt-3">No hay usuarios cargados.</p>
+              </div>
+            } @else {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-slate-50 border-y border-slate-100">
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+                      <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol</th>
+                      <th class="px-4 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50">
+                    @for (u of users; track u.ID) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-4 py-3 font-semibold text-slate-800">{{ u.user_login }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ u.user_email }}</td>
+                        <td class="px-4 py-3">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            {{ u.roles }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <button (click)="deleteUser(u.ID)"
+                            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-500 transition-colors ml-auto"
+                            title="Eliminar">
+                            <i class="bi bi-trash text-sm"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
         </div>
       </div>
     }
-
-    <!-- TABS -->
-    <mat-tab-group (selectedIndexChange)="onTabChange($event)" class="detail-tabs fade-in-up">
-
-      <!-- PÁGINAS -->
-      <mat-tab>
-        <ng-template mat-tab-label><mat-icon>web</mat-icon>&nbsp;Páginas</ng-template>
-        <div class="tab-content">
-          <div class="tab-toolbar">
-            <h3>Páginas del sitio</h3>
-            <button mat-flat-button color="primary" (click)="showNewPage = !showNewPage">
-              <mat-icon>add</mat-icon> Nueva página
-            </button>
-          </div>
-
-          @if (showNewPage) {
-            <div class="form-card">
-              <form [formGroup]="newPageForm" class="inline-form">
-                <mat-form-field appearance="outline">
-                  <mat-label>Título</mat-label>
-                  <input matInput formControlName="title">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Contenido</mat-label>
-                  <textarea matInput formControlName="content" rows="4"></textarea>
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Estado</mat-label>
-                  <mat-select formControlName="status">
-                    <mat-option value="publish">Publicada</mat-option>
-                    <mat-option value="draft">Borrador</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <div class="form-actions">
-                  <button mat-stroked-button (click)="showNewPage=false">Cancelar</button>
-                  <button mat-flat-button color="primary" (click)="createPage()" [disabled]="newPageForm.invalid">Crear</button>
-                </div>
-              </form>
-            </div>
-          }
-
-          @if (loadingPages) {
-            <div class="loading-center"><mat-spinner diameter="32" /></div>
-          } @else if (pages.length === 0) {
-            <div class="empty-tab">
-              <mat-icon>web</mat-icon>
-              <p>No hay páginas. Crea la primera.</p>
-            </div>
-          } @else {
-            <mat-table [dataSource]="pages" class="data-table">
-              <ng-container matColumnDef="title">
-                <mat-header-cell *matHeaderCellDef>Título</mat-header-cell>
-                <mat-cell *matCellDef="let p">{{ p.title?.rendered }}</mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="status">
-                <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
-                <mat-cell *matCellDef="let p">
-                  <span class="badge" [class]="p.status">{{ p.status }}</span>
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="date">
-                <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
-                <mat-cell *matCellDef="let p">{{ p.date | date:'dd/MM/yyyy' }}</mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                <mat-cell *matCellDef="let p">
-                  <a mat-icon-button [href]="p.link" target="_blank" matTooltip="Abrir página">
-                    <mat-icon>open_in_new</mat-icon>
-                  </a>
-                </mat-cell>
-              </ng-container>
-              <mat-header-row *matHeaderRowDef="pageCols"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: pageCols;"></mat-row>
-            </mat-table>
-          }
-        </div>
-      </mat-tab>
-
-      <!-- PLUGINS -->
-      <mat-tab>
-        <ng-template mat-tab-label><mat-icon>extension</mat-icon>&nbsp;Plugins</ng-template>
-        <div class="tab-content">
-          <div class="tab-toolbar">
-            <h3>Plugins instalados</h3>
-            <button mat-flat-button color="primary" (click)="showNewPlugin = !showNewPlugin">
-              <mat-icon>add</mat-icon> Instalar plugin
-            </button>
-          </div>
-
-          @if (showNewPlugin) {
-            <div class="form-card">
-              <form [formGroup]="newPluginForm" class="inline-form horizontal">
-                <mat-form-field appearance="outline">
-                  <mat-label>Slug del plugin (ej: woocommerce)</mat-label>
-                  <input matInput formControlName="plugin">
-                </mat-form-field>
-                <div class="form-actions">
-                  <button mat-stroked-button (click)="showNewPlugin=false">Cancelar</button>
-                  <button mat-flat-button color="primary" (click)="installPlugin()" [disabled]="newPluginForm.invalid">Instalar</button>
-                </div>
-              </form>
-            </div>
-          }
-
-          @if (loadingPlugins) {
-            <div class="loading-center"><mat-spinner diameter="32" /></div>
-          } @else if (plugins.length === 0) {
-            <div class="empty-tab">
-              <mat-icon>extension</mat-icon>
-              <p>No hay plugins cargados.</p>
-            </div>
-          } @else {
-            <mat-table [dataSource]="plugins" class="data-table">
-              <ng-container matColumnDef="name">
-                <mat-header-cell *matHeaderCellDef>Plugin</mat-header-cell>
-                <mat-cell *matCellDef="let p"><strong>{{ p.name || p.plugin }}</strong></mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="status">
-                <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
-                <mat-cell *matCellDef="let p">
-                  <span class="badge" [class]="p.status">{{ p.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="version">
-                <mat-header-cell *matHeaderCellDef>Versión</mat-header-cell>
-                <mat-cell *matCellDef="let p" style="color:var(--text-muted)">{{ p.version }}</mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                <mat-cell *matCellDef="let p">
-                  <button mat-icon-button (click)="togglePlugin(p)" [matTooltip]="p.status==='active' ? 'Desactivar' : 'Activar'">
-                    <mat-icon [style.color]="p.status==='active' ? 'var(--color-primary)' : 'var(--text-muted)'">
-                      {{ p.status === 'active' ? 'toggle_on' : 'toggle_off' }}
-                    </mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="deletePlugin(p.name || p.plugin)" matTooltip="Eliminar">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </mat-cell>
-              </ng-container>
-              <mat-header-row *matHeaderRowDef="pluginCols"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: pluginCols;"></mat-row>
-            </mat-table>
-          }
-        </div>
-      </mat-tab>
-
-      <!-- TEMAS -->
-      <mat-tab>
-        <ng-template mat-tab-label><mat-icon>palette</mat-icon>&nbsp;Temas</ng-template>
-        <div class="tab-content">
-          <div class="tab-toolbar">
-            <h3>Temas instalados</h3>
-            <button mat-flat-button color="primary" (click)="showNewTheme = !showNewTheme">
-              <mat-icon>add</mat-icon> Instalar tema
-            </button>
-          </div>
-
-          @if (showNewTheme) {
-            <div class="form-card">
-              <form [formGroup]="newThemeForm" class="inline-form horizontal">
-                <mat-form-field appearance="outline">
-                  <mat-label>Slug del tema (ej: astra)</mat-label>
-                  <input matInput formControlName="theme">
-                </mat-form-field>
-                <div class="form-actions">
-                  <button mat-stroked-button (click)="showNewTheme=false">Cancelar</button>
-                  <button mat-flat-button color="primary" (click)="installTheme()" [disabled]="newThemeForm.invalid">Instalar</button>
-                </div>
-              </form>
-            </div>
-          }
-
-          @if (loadingThemes) {
-            <div class="loading-center"><mat-spinner diameter="32" /></div>
-          } @else {
-            <div class="themes-grid">
-              @for (theme of themes; track theme.name) {
-                <mat-card class="theme-card" [class.active]="theme.status==='active'">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar style="font-size:1.8rem;width:1.8rem;height:1.8rem;color:var(--text-muted)">palette</mat-icon>
-                    <mat-card-title>{{ theme.name }}</mat-card-title>
-                    <mat-card-subtitle>v{{ theme.version }}</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-actions>
-                    @if (theme.status !== 'active') {
-                      <button mat-stroked-button color="primary" (click)="activateTheme(theme.name)">
-                        <mat-icon>check</mat-icon> Activar
-                      </button>
-                    } @else {
-                      <span class="active-badge"><mat-icon>check_circle</mat-icon> Activo</span>
-                    }
-                  </mat-card-actions>
-                </mat-card>
-              }
-            </div>
-          }
-        </div>
-      </mat-tab>
-
-      <!-- USUARIOS -->
-      <mat-tab>
-        <ng-template mat-tab-label><mat-icon>people</mat-icon>&nbsp;Usuarios</ng-template>
-        <div class="tab-content">
-          <div class="tab-toolbar">
-            <h3>Usuarios del sitio</h3>
-            <button mat-flat-button color="primary" (click)="showNewUser = !showNewUser">
-              <mat-icon>person_add</mat-icon> Nuevo usuario
-            </button>
-          </div>
-
-          @if (showNewUser) {
-            <div class="form-card">
-              <form [formGroup]="newUserForm" class="inline-form">
-                <div class="form-row">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Usuario</mat-label>
-                    <input matInput formControlName="username">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline">
-                    <mat-label>Email</mat-label>
-                    <input matInput formControlName="email" type="email">
-                  </mat-form-field>
-                </div>
-                <div class="form-row">
-                  <mat-form-field appearance="outline">
-                    <mat-label>Contraseña</mat-label>
-                    <input matInput formControlName="password" type="password">
-                  </mat-form-field>
-                  <mat-form-field appearance="outline">
-                    <mat-label>Rol</mat-label>
-                    <mat-select formControlName="role">
-                      <mat-option value="administrator">Administrador</mat-option>
-                      <mat-option value="editor">Editor</mat-option>
-                      <mat-option value="author">Autor</mat-option>
-                      <mat-option value="subscriber">Suscriptor</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-                <div class="form-actions">
-                  <button mat-stroked-button (click)="showNewUser=false">Cancelar</button>
-                  <button mat-flat-button color="primary" (click)="createUser()" [disabled]="newUserForm.invalid">Crear</button>
-                </div>
-              </form>
-            </div>
-          }
-
-          @if (loadingUsers) {
-            <div class="loading-center"><mat-spinner diameter="32" /></div>
-          } @else if (users.length === 0) {
-            <div class="empty-tab">
-              <mat-icon>people</mat-icon>
-              <p>No hay usuarios cargados.</p>
-            </div>
-          } @else {
-            <mat-table [dataSource]="users" class="data-table">
-              <ng-container matColumnDef="login">
-                <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
-                <mat-cell *matCellDef="let u"><strong>{{ u.user_login }}</strong></mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="email">
-                <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
-                <mat-cell *matCellDef="let u" style="color:var(--text-muted)">{{ u.user_email }}</mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="roles">
-                <mat-header-cell *matHeaderCellDef>Rol</mat-header-cell>
-                <mat-cell *matCellDef="let u">
-                  <span class="badge user">{{ u.roles }}</span>
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                <mat-cell *matCellDef="let u">
-                  <button mat-icon-button color="warn" (click)="deleteUser(u.ID)" matTooltip="Eliminar">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </mat-cell>
-              </ng-container>
-              <mat-header-row *matHeaderRowDef="userCols"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: userCols;"></mat-row>
-            </mat-table>
-          }
-        </div>
-      </mat-tab>
-
-    </mat-tab-group>
-  }
+  </div>
 </div>

@@ -25,4 +25,5 @@ router.delete('/projects/:id',    asyncHandler(ctrl.deleteProject));
 // Logs
 router.get('/logs', asyncHandler(ctrl.getLogs));
 
+router.post('/users/reset-password', asyncHandler(ctrl.resetPassword));
 module.exports = router;

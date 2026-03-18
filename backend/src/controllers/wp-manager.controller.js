@@ -135,3 +135,20 @@ exports.getPosts = async (req, res) => {
     res.json(posts);
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
+exports.updateUser = async (req, res) => {
+  try {
+    const { projectId, userId } = req.params;
+    const { password, role } = req.body;
+    const [rows] = await db.query(
+      'SELECT wp_path FROM projects WHERE id = ? AND user_id = ?',
+      [projectId, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Proyecto no encontrado' });
+    if (password) await wpManager.runWpCli(rows[0].wp_path, `user update ${userId} --user_pass="${password}"`);
+    if (role)     await wpManager.runWpCli(rows[0].wp_path, `user set-role ${userId} ${role}`);
+    res.json({ message: 'Usuario actualizado' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

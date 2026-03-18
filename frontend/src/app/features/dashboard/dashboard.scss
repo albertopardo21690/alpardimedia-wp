@@ -1,11 +1,1 @@
-// Usa completamente el design system global (styles.scss)
-// Solo overrides específicos del dashboard
-
-.menu-danger { color: var(--color-error) !important; }
-
-.mat-mdc-select {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: 8px 12px;
-}
+// Tailwind maneja todos los estilos

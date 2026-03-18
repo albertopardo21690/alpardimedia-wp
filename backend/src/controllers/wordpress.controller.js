@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const wpManager = require('../services/wordpress/wp-manager.service');
 const wpService = require('../services/wordpress/wp.service');
 
 exports.install = async (req, res) => {
@@ -18,6 +19,29 @@ exports.install = async (req, res) => {
 
     // Generar wp-config.php y registrar instalación
     const result = await wpService.install(projectId, config);
+
+    // Instalar plugins seleccionados
+    const plugins = req.body.plugins || [];
+    if (plugins.length > 0) {
+      for (const plugin of plugins) {
+        try {
+          await wpManager.installPlugin(projectId, plugin);
+        } catch (pluginErr) {
+          console.error('Error instalando plugin ' + plugin + ':', pluginErr.message);
+        }
+      }
+    }
+
+    // Instalar y activar tema según tipo de web
+    const theme = req.body.theme || 'astra';
+    try {
+      console.log('🎨 Instalando tema:', theme);
+      await wpManager.installTheme(projectId, theme);
+      await wpManager.activateTheme(projectId, theme);
+      console.log('✅ Tema instalado y activado:', theme);
+    } catch (themeErr) {
+      console.error('Error instalando tema ' + theme + ':', themeErr.message);
+    }
 
     await db.query(
       'UPDATE projects SET status = ?, wp_path = ?, wp_url = ? WHERE id = ?',

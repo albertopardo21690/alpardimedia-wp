@@ -1,366 +1,585 @@
-<div class="install-wrapper">
+<div class="min-h-screen bg-slate-50 py-8 px-4">
+  <div class="max-w-2xl mx-auto">
 
-  <!-- HEADER -->
-  <div class="install-header fade-in-up">
-    <a mat-icon-button routerLink="/dashboard" matTooltip="Volver al dashboard">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div>
-      <h1>Nuevo proyecto WordPress</h1>
-      <p>Completa el asistente para instalar WordPress automáticamente</p>
+    <!-- HEADER -->
+    <div class="flex items-center gap-3 mb-8">
+      <a routerLink="/dashboard"
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+        <i class="bi bi-arrow-left text-base"></i>
+      </a>
+      <div>
+        <h1 class="font-heading text-xl font-bold text-slate-900">Nuevo proyecto WordPress</h1>
+        <p class="text-slate-500 text-xs mt-0.5">Completa el asistente de instalación</p>
+      </div>
     </div>
-    <button mat-stroked-button (click)="saveDraft()" matTooltip="Guardar borrador">
-      <mat-icon>save</mat-icon> Guardar borrador
-    </button>
-  </div>
 
-  @if (!installed) {
-    <mat-stepper linear #stepper class="install-stepper">
+    @if (!installed) {
 
-      <!-- PASO 1: PROYECTO -->
-      <mat-step [stepControl]="step1" label="Proyecto">
-        <div class="step-content fade-in-up">
-          <div class="step-icon project"><mat-icon>folder_open</mat-icon></div>
-          <h2>Datos del proyecto</h2>
-          <p>Ponle nombre a tu nuevo proyecto WordPress</p>
-          <form [formGroup]="step1">
-            <mat-form-field appearance="outline">
-              <mat-label>Nombre del proyecto</mat-label>
-              <input matInput formControlName="name" placeholder="Mi tienda online">
-              <mat-hint>Se usará para identificar el proyecto en el panel</mat-hint>
-              @if (step1.get('name')?.hasError('required') && step1.get('name')?.touched) {
-                <mat-error>El nombre es obligatorio</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Descripción (opcional)</mat-label>
-              <textarea matInput formControlName="description" rows="3" placeholder="Breve descripción del proyecto"></textarea>
-            </mat-form-field>
-          </form>
-          <div class="step-actions">
-            <button mat-flat-button color="primary" matStepperNext [disabled]="step1.invalid">
-              Siguiente <mat-icon>arrow_forward</mat-icon>
-            </button>
+      <!-- STEPPER -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between relative">
+          <div class="absolute top-4 left-0 right-0 h-0.5 bg-slate-200 z-0">
+            <div class="h-full bg-primary-800 transition-all duration-500"
+                 [style.width]="((currentStep) / (totalSteps-1) * 100) + '%'"></div>
           </div>
-        </div>
-      </mat-step>
-
-      <!-- PASO 2: BASE DE DATOS -->
-      <mat-step [stepControl]="step2" label="Base de datos">
-        <div class="step-content fade-in-up">
-          <div class="step-icon db"><mat-icon>storage</mat-icon></div>
-          <h2>Configuración de base de datos</h2>
-          <p>Credenciales de conexión MySQL para este WordPress</p>
-
-          @if (dbValidating) {
-            <div class="db-status validating">
-              <mat-spinner diameter="16" /><span>Validando conexión...</span>
-            </div>
-          } @else if (dbValid === true) {
-            <div class="db-status success">
-              <mat-icon>check_circle</mat-icon><span>{{ dbMessage }}</span>
-            </div>
-          } @else if (dbValid === false) {
-            <div class="db-status error">
-              <mat-icon>error_outline</mat-icon><span>{{ dbMessage }}</span>
+          @for (step of stepLabels; track $index; let i = $index) {
+            <div class="flex flex-col items-center gap-1.5 z-10">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+                   [ngClass]="i < currentStep ? 'bg-primary-800 text-white' : i === currentStep ? 'bg-primary-800 text-white ring-4 ring-primary-100' : 'bg-white border-2 border-slate-200 text-slate-400'">
+                @if (i < currentStep) {
+                  <i class="bi bi-check-lg text-xs"></i>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </div>
+              <span class="text-xs font-bold hidden sm:block"
+                    [ngClass]="i === currentStep ? 'text-primary-800' : 'text-slate-400'">
+                {{ step }}
+              </span>
             </div>
           }
+        </div>
+      </div>
 
-          <form [formGroup]="step2">
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Nombre de la BD</mat-label>
-                <input matInput formControlName="dbName" placeholder="wp_miproyecto">
-                <mat-hint>Se creará automáticamente</mat-hint>
-                @if (step2.get('dbName')?.hasError('required') && step2.get('dbName')?.touched) {
-                  <mat-error>Obligatorio</mat-error>
-                }
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Prefijo de tablas</mat-label>
-                <input matInput formControlName="dbPrefix" placeholder="wp_">
-                @if (step2.get('dbPrefix')?.hasError('pattern')) {
-                  <mat-error>Solo letras y guión bajo</mat-error>
-                }
-              </mat-form-field>
+      <!-- CARD DEL PASO -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+        <!-- PASO 0: TIPO DE WEB -->
+        @if (currentStep === 0) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-grid-3x3-gap text-indigo-600 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">¿Qué tipo de web quieres crear?</h2>
+              <p class="text-slate-500 text-sm mt-1">Selecciona el tipo y configuraremos todo automáticamente</p>
             </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Usuario MySQL</mat-label>
-                <input matInput formControlName="dbUser">
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Contraseña MySQL</mat-label>
-                <input matInput formControlName="dbPassword" [type]="hideDbPassword ? 'password' : 'text'">
-                <button mat-icon-button matSuffix type="button" (click)="hideDbPassword = !hideDbPassword">
-                  <mat-icon>{{ hideDbPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-                </button>
-                <button mat-icon-button matSuffix type="button" (click)="generatePassword('dbPassword')" matTooltip="Generar contraseña segura">
-                  <mat-icon>auto_fix_high</mat-icon>
-                </button>
-              </mat-form-field>
+
+            <!-- BÚSQUEDA Y CATEGORÍAS -->
+            <div class="flex flex-col sm:flex-row gap-3 mb-5">
+              <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 focus-within:ring-2 focus-within:ring-primary-800 transition-all">
+                <i class="bi bi-search text-slate-400 text-sm"></i>
+                <input type="text" placeholder="Buscar tipo de web..."
+                  [(ngModel)]="typeSearchQuery"
+                  class="outline-none text-sm text-slate-700 placeholder:text-slate-400 bg-transparent flex-1">
+              </div>
+              <div class="overflow-x-auto">
+                <div class="flex gap-2 min-w-max">
+                  @for (cat of typeCategories; track cat) {
+                    <button (click)="typeCategory = cat"
+                      class="px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors"
+                      [ngClass]="typeCategory === cat
+                        ? 'bg-primary-800 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+                      {{ cat }}
+                    </button>
+                  }
+                </div>
+              </div>
             </div>
-            <mat-form-field appearance="outline">
-              <mat-label>Host MySQL</mat-label>
-              <input matInput formControlName="dbHost">
-            </mat-form-field>
-          </form>
 
-          <div class="step-actions">
-            <button mat-stroked-button matStepperPrevious>
-              <mat-icon>arrow_back</mat-icon> Anterior
-            </button>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="step2.invalid">
-              Siguiente <mat-icon>arrow_forward</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-step>
-
-      <!-- PASO 3: ADMINISTRADOR -->
-      <mat-step [stepControl]="step3" label="Administrador">
-        <div class="step-content fade-in-up">
-          <div class="step-icon admin"><mat-icon>admin_panel_settings</mat-icon></div>
-          <h2>Cuenta de administrador</h2>
-          <p>Credenciales para acceder a wp-admin</p>
-          <form [formGroup]="step3">
-            <mat-form-field appearance="outline">
-              <mat-label>Usuario administrador</mat-label>
-              <input matInput formControlName="adminUser">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Contraseña administrador</mat-label>
-              <input matInput formControlName="adminPassword" [type]="hideAdminPassword ? 'password' : 'text'">
-              <button mat-icon-button matSuffix type="button" (click)="hideAdminPassword = !hideAdminPassword">
-                <mat-icon>{{ hideAdminPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              <button mat-icon-button matSuffix type="button" (click)="generatePassword('adminPassword')" matTooltip="Generar contraseña segura">
-                <mat-icon>auto_fix_high</mat-icon>
-              </button>
-              @if (step3.get('adminPassword')?.hasError('minlength')) {
-                <mat-error>Mínimo 8 caracteres</mat-error>
+            <!-- GRID DE TIPOS -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto pr-1">
+              @for (type of filteredTypes; track type.id) {
+                <div (click)="selectWebType(type)"
+                  class="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all text-center"
+                  [ngClass]="selectedTypeId === type.id
+                    ? 'border-primary-800 bg-primary-50 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-primary-300 hover:bg-slate-50'">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                       [style.background]="type.color + '20'">
+                    <i [class]="'bi bi-' + type.icon + ' text-lg'" [style.color]="type.color"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-800 leading-tight">{{ type.name }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5 leading-tight hidden sm:block">{{ type.description }}</p>
+                  </div>
+                  @if (selectedTypeId === type.id) {
+                    <div class="w-5 h-5 bg-primary-800 rounded-full flex items-center justify-center flex-shrink-0">
+                      <i class="bi bi-check text-white text-xs"></i>
+                    </div>
+                  }
+                </div>
               }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Email administrador</mat-label>
-              <input matInput formControlName="adminEmail" type="email">
-              @if (step3.get('adminEmail')?.hasError('email')) {
-                <mat-error>Email no válido</mat-error>
+              @if (filteredTypes.length === 0) {
+                <div class="col-span-4 text-center py-10 text-slate-400">
+                  <i class="bi bi-search text-3xl"></i>
+                  <p class="text-sm mt-2">No hay resultados para "{{ typeSearchQuery }}"</p>
+                </div>
               }
-            </mat-form-field>
-          </form>
-          <div class="step-actions">
-            <button mat-stroked-button matStepperPrevious>
-              <mat-icon>arrow_back</mat-icon> Anterior
-            </button>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="step3.invalid">
-              Siguiente <mat-icon>arrow_forward</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-step>
+            </div>
 
-      <!-- PASO 4: CONFIGURACIÓN -->
-      <mat-step [stepControl]="step4" label="Configuración">
-        <div class="step-content fade-in-up">
-          <div class="step-icon config"><mat-icon>tune</mat-icon></div>
-          <h2>Configuración del sitio</h2>
-          <p>Personaliza tu instalación de WordPress</p>
-          <form [formGroup]="step4">
-            <mat-form-field appearance="outline">
-              <mat-label>Nombre del sitio</mat-label>
-              <input matInput formControlName="siteName">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Descripción del sitio</mat-label>
-              <input matInput formControlName="siteDescription" placeholder="Just another WordPress site">
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Idioma</mat-label>
-              <mat-select formControlName="language">
-                @for (lang of languages; track lang.value) {
-                  <mat-option [value]="lang.value">{{ lang.label }}</mat-option>
+            @if (selectedTypeId) {
+              @for (type of webTypes; track type.id) {
+                @if (type.id === selectedTypeId) {
+                  <div class="mt-4 flex items-center gap-3 bg-primary-50 border border-primary-200 rounded-xl px-4 py-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         [style.background]="type.color + '20'">
+                      <i [class]="'bi bi-' + type.icon" [style.color]="type.color"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-bold text-primary-800">{{ type.name }}</p>
+                      <p class="text-xs text-primary-600">
+                        <i class="bi bi-puzzle mr-1"></i>{{ type.plugins.length }} plugins ·
+                        <i class="bi bi-palette ml-1 mr-1"></i>Tema: <strong>{{ selectedTheme?.name }}</strong>
+                      </p>
+                    </div>
+                    <div class="flex gap-1 flex-wrap max-w-48">
+                      @for (plugin of type.plugins.slice(0, 3); track plugin) {
+                        <span class="text-xs bg-white border border-primary-200 text-primary-700 px-2 py-0.5 rounded-full font-medium">
+                          {{ plugin }}
+                        </span>
+                      }
+                      @if (type.plugins.length > 3) {
+                        <span class="text-xs bg-white border border-primary-200 text-primary-700 px-2 py-0.5 rounded-full font-medium">
+                          +{{ type.plugins.length - 3 }} más
+                        </span>
+                      }
+                    </div>
+                  </div>
                 }
-              </mat-select>
-            </mat-form-field>
-          </form>
-          <div class="step-actions">
-            <button mat-stroked-button matStepperPrevious>
-              <mat-icon>arrow_back</mat-icon> Anterior
-            </button>
-            <button mat-flat-button color="primary" matStepperNext [disabled]="step4.invalid">
-              Siguiente <mat-icon>arrow_forward</mat-icon>
-            </button>
+              }
+            }
+
           </div>
-        </div>
-      </mat-step>
+        }
 
-      <!-- PASO 5: PLUGINS -->
-      <mat-step label="Plugins">
-        <div class="step-content fade-in-up">
-          <div class="step-icon plugins"><mat-icon>extension</mat-icon></div>
-          <h2>Plugins populares</h2>
-          <p>Selecciona los plugins que quieres instalar automáticamente</p>
+        <!-- PASO 1: PROYECTO -->
+        @if (currentStep === 6) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-folder-plus text-primary-800 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Datos del proyecto</h2>
+              <p class="text-slate-500 text-sm mt-1">Ponle nombre a tu nuevo proyecto WordPress</p>
+            </div>
+            <form [formGroup]="step1" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre del proyecto <span class="text-red-500">*</span></label>
+                <input formControlName="name" type="text" placeholder="Mi tienda online"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all placeholder:text-slate-400"
+                  [class.border-red-400]="step1.get('name')?.invalid && step1.get('name')?.touched">
+                <p class="text-slate-400 text-xs mt-1">Se usará para identificar el proyecto en el panel</p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Descripción (opcional)</label>
+                <textarea formControlName="description" rows="3" placeholder="Breve descripción del proyecto"
+                  class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all placeholder:text-slate-400 resize-none"></textarea>
+              </div>
+            </form>
+          </div>
+        }
 
-          <div class="plugins-grid">
-            @for (plugin of popularPlugins; track plugin.slug) {
-              <div class="plugin-chip" [class.selected]="isPluginSelected(plugin.slug)"
-                   (click)="togglePlugin(plugin.slug)">
-                <mat-icon>{{ plugin.icon }}</mat-icon>
-                <span>{{ plugin.name }}</span>
-                @if (isPluginSelected(plugin.slug)) {
-                  <mat-icon class="check">check_circle</mat-icon>
-                }
+        <!-- PASO 2: BASE DE DATOS -->
+        @if (currentStep === 1) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-database text-emerald-600 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Base de datos</h2>
+              <p class="text-slate-500 text-sm mt-1">Credenciales de conexión MySQL</p>
+            </div>
+
+            @if (dbValidating) {
+              <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl text-sm mb-6">
+                <div class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                Validando conexión...
+              </div>
+            } @else if (dbValid === true) {
+              <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm mb-6">
+                <i class="bi bi-check-circle flex-shrink-0"></i> {{ dbMessage }}
+              </div>
+            } @else if (dbValid === false) {
+              <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-6">
+                <i class="bi bi-exclamation-circle flex-shrink-0"></i> {{ dbMessage }}
+              </div>
+            }
+
+            <form [formGroup]="step2" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre de la BD <span class="text-red-500">*</span></label>
+                  <input formControlName="dbName" placeholder="wp_miproyecto"
+                    class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all placeholder:text-slate-400">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Prefijo de tablas</label>
+                  <input formControlName="dbPrefix" placeholder="wp_"
+                    class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all placeholder:text-slate-400">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Usuario MySQL</label>
+                  <input formControlName="dbUser"
+                    class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña MySQL</label>
+                  <div class="relative">
+                    <input formControlName="dbPassword" [type]="hideDbPassword ? 'password' : 'text'"
+                      class="w-full h-11 px-4 pr-20 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                      <button type="button" (click)="hideDbPassword=!hideDbPassword" class="p-1.5 text-slate-400 hover:text-slate-600">
+                        <i [class]="hideDbPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-sm"></i>
+                      </button>
+                      <button type="button" (click)="generatePassword('dbPassword')" class="p-1.5 text-slate-400 hover:text-primary-700" title="Generar contraseña">
+                        <i class="bi bi-magic text-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Host MySQL</label>
+                <input formControlName="dbHost"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- PASO 3: ADMINISTRADOR -->
+        @if (currentStep === 2) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-person-gear text-purple-600 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Cuenta administrador</h2>
+              <p class="text-slate-500 text-sm mt-1">Credenciales para acceder a wp-admin</p>
+            </div>
+            <form [formGroup]="step3" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Usuario administrador</label>
+                <input formControlName="adminUser"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña administrador</label>
+                <div class="relative">
+                  <input formControlName="adminPassword" [type]="hideAdminPassword ? 'password' : 'text'"
+                    class="w-full h-11 px-4 pr-20 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                    <button type="button" (click)="hideAdminPassword=!hideAdminPassword" class="p-1.5 text-slate-400 hover:text-slate-600">
+                      <i [class]="hideAdminPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-sm"></i>
+                    </button>
+                    <button type="button" (click)="generatePassword('adminPassword')" class="p-1.5 text-slate-400 hover:text-primary-700" title="Generar contraseña">
+                      <i class="bi bi-magic text-sm"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email administrador</label>
+                <input formControlName="adminEmail" type="email"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- PASO 4: CONFIGURACIÓN -->
+        @if (currentStep === 3) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-sliders text-amber-600 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Configuración del sitio</h2>
+              <p class="text-slate-500 text-sm mt-1">Personaliza tu instalación de WordPress</p>
+            </div>
+            <form [formGroup]="step4" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre del sitio <span class="text-red-500">*</span></label>
+                <input formControlName="siteName"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Descripción del sitio</label>
+                <input formControlName="siteDescription" placeholder="Just another WordPress site"
+                  class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all placeholder:text-slate-400">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="bi bi-translate text-slate-400 mr-1"></i> Idioma
+                  </label>
+                  <select formControlName="language"
+                    class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all bg-white">
+                    @for (lang of languages; track lang.value) {
+                      <option [value]="lang.value">{{ lang.label }}</option>
+                    }
+                  </select>
+                  <p class="text-slate-400 text-xs mt-1">Idioma del panel de administración</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="bi bi-wordpress text-slate-400 mr-1"></i> Versión de WordPress
+                  </label>
+                  <select formControlName="version"
+                    class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all bg-white">
+                    @for (ver of wpVersions; track ver.value) {
+                      <option [value]="ver.value">{{ ver.label }}</option>
+                    }
+                  </select>
+                  <p class="text-slate-400 text-xs mt-1">Se descargará automáticamente</p>
+                </div>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- PASO 5: PLUGINS -->
+        @if (currentStep === 4) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-sky-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-puzzle text-sky-600 text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Plugins populares</h2>
+              <p class="text-slate-500 text-sm mt-1">Selecciona los plugins a instalar automáticamente</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+              @for (plugin of popularPlugins; track plugin.slug) {
+                <div (click)="togglePlugin(plugin.slug)"
+                  class="flex items-center gap-2 px-3 py-3 rounded-xl border-2 cursor-pointer transition-all"
+                  [ngClass]="isPluginSelected(plugin.slug)
+                    ? 'border-primary-800 bg-primary-50'
+                    : 'border-slate-200 bg-white hover:border-primary-300'">
+                  <i [class]="'bi bi-' + plugin.icon + ' text-base'"
+                     [ngClass]="isPluginSelected(plugin.slug) ? 'text-primary-700' : 'text-slate-400'"></i>
+                  <span class="text-xs font-bold flex-1"
+                        [ngClass]="isPluginSelected(plugin.slug) ? 'text-primary-800' : 'text-slate-600'">
+                    {{ plugin.name }}
+                  </span>
+                  @if (isPluginSelected(plugin.slug)) {
+                    <i class="bi bi-check-circle-fill text-primary-700 text-sm flex-shrink-0"></i>
+                  }
+                </div>
+              }
+            </div>
+            @if (selectedPlugins.length > 0) {
+              <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-semibold">
+                <i class="bi bi-puzzle"></i>
+                {{ selectedPlugins.length }} plugin{{ selectedPlugins.length !== 1 ? 's' : '' }} seleccionado{{ selectedPlugins.length !== 1 ? 's' : '' }}
               </div>
             }
           </div>
+        }
 
-          @if (selectedPlugins.length > 0) {
-            <div class="selected-count">
-              <mat-icon>extension</mat-icon>
-              {{ selectedPlugins.length }} plugin{{ selectedPlugins.length !== 1 ? 's' : '' }} seleccionado{{ selectedPlugins.length !== 1 ? 's' : '' }}
+        <!-- PASO 6: RESUMEN + INSTALAR -->
+        @if (currentStep === 5) {
+          <div class="p-8">
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-rocket text-white text-2xl"></i>
+              </div>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Resumen de instalación</h2>
+              <p class="text-slate-500 text-sm mt-1">Revisa los datos antes de instalar</p>
             </div>
-          }
 
-          <div class="step-actions">
-            <button mat-stroked-button matStepperPrevious>
-              <mat-icon>arrow_back</mat-icon> Anterior
-            </button>
-            <button mat-flat-button color="primary" matStepperNext>
-              Revisar <mat-icon>arrow_forward</mat-icon>
-            </button>
-          </div>
-        </div>
-      </mat-step>
-
-      <!-- PASO 6: RESUMEN + INSTALAR -->
-      <mat-step label="Instalar">
-        <div class="step-content fade-in-up">
-          <div class="step-icon summary"><mat-icon>rocket_launch</mat-icon></div>
-          <h2>Resumen de instalación</h2>
-          <p>Revisa los datos antes de instalar</p>
-
-          <div class="summary-grid">
-            <div class="summary-section">
-              <h3><mat-icon>folder</mat-icon> Proyecto</h3>
-              <div class="summary-item"><span>Nombre</span><strong>{{ step1.value.name }}</strong></div>
-            </div>
-            <div class="summary-section">
-              <h3><mat-icon>storage</mat-icon> Base de datos</h3>
-              <div class="summary-item"><span>BD</span><strong>{{ step2.value.dbName }}</strong></div>
-              <div class="summary-item"><span>Host</span><strong>{{ step2.value.dbHost }}</strong></div>
-              <div class="summary-item"><span>Prefijo</span><strong>{{ step2.value.dbPrefix }}</strong></div>
-            </div>
-            <div class="summary-section">
-              <h3><mat-icon>admin_panel_settings</mat-icon> Administrador</h3>
-              <div class="summary-item"><span>Usuario</span><strong>{{ step3.value.adminUser }}</strong></div>
-              <div class="summary-item"><span>Email</span><strong>{{ step3.value.adminEmail }}</strong></div>
-            </div>
-            <div class="summary-section">
-              <h3><mat-icon>tune</mat-icon> Sitio</h3>
-              <div class="summary-item"><span>Nombre</span><strong>{{ step4.value.siteName }}</strong></div>
-              <div class="summary-item"><span>Idioma</span><strong>{{ step4.value.language }}</strong></div>
-            </div>
-          </div>
-
-          @if (selectedPlugins.length > 0) {
-            <div class="summary-plugins">
-              <mat-icon>extension</mat-icon>
-              <span>Plugins: {{ selectedPlugins.join(', ') }}</span>
-            </div>
-          }
-
-          <mat-expansion-panel class="preview-panel" (opened)="loadPreview()">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <mat-icon>code</mat-icon> Vista previa wp-config.php
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <pre class="config-preview">{{ wpConfigPreview || 'Cargando...' }}</pre>
-          </mat-expansion-panel>
-
-          @if (installing) {
-            <div class="install-progress">
-              <mat-progress-bar mode="determinate" [value]="progressValue" />
-              <div class="progress-label">{{ progressValue }}%</div>
-              <div class="install-steps">
-                @for (step of installSteps; track step.label; let i = $index) {
-                  <div class="install-step" [class.active]="i === currentStep" [class.done]="step.done">
-                    <mat-icon>{{ step.done ? 'check_circle' : (i === currentStep ? step.icon : 'radio_button_unchecked') }}</mat-icon>
-                    <span>{{ step.label }}</span>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <i class="bi bi-folder"></i> Proyecto
+                </p>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Nombre</span>
+                    <strong class="text-slate-800 truncate max-w-24">{{ step1.value.name }}</strong>
                   </div>
-                }
+                </div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <i class="bi bi-database"></i> Base de datos
+                </p>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">BD</span>
+                    <strong class="text-slate-800 truncate max-w-24">{{ step2.value.dbName }}</strong>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Prefijo</span>
+                    <strong class="text-slate-800">{{ step2.value.dbPrefix }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <i class="bi bi-person-gear"></i> Admin
+                </p>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Usuario</span>
+                    <strong class="text-slate-800">{{ step3.value.adminUser }}</strong>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Email</span>
+                    <strong class="text-slate-800 truncate max-w-24">{{ step3.value.adminEmail }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <i class="bi bi-sliders"></i> Sitio
+                </p>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Nombre</span>
+                    <strong class="text-slate-800 truncate max-w-24">{{ step4.value.siteName }}</strong>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-slate-500">Idioma</span>
+                    <strong class="text-slate-800">{{ step4.value.language }}</strong>
+                  </div>
+                </div>
               </div>
             </div>
-          }
 
-          @if (error) {
-            <div class="install-error">
-              <mat-icon>error_outline</mat-icon> {{ error }}
-            </div>
-          }
+            <!-- TEMA SELECCIONADO -->
+            @if (selectedTheme) {
+              <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 px-4 py-3 rounded-xl mb-3">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="bi bi-palette text-purple-600"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold text-purple-800">Tema: {{ selectedTheme.name }}</p>
+                  <p class="text-xs text-purple-600">{{ selectedTheme.description }}</p>
+                </div>
+                <div class="flex gap-1.5">
+                  <span class="w-4 h-4 rounded-full border border-white shadow-sm"
+                        [style.background]="selectedTheme.colors.primary"></span>
+                  <span class="w-4 h-4 rounded-full border border-white shadow-sm"
+                        [style.background]="selectedTheme.colors.accent"></span>
+                  <span class="w-4 h-4 rounded-full border border-white shadow-sm"
+                        [style.background]="selectedTheme.colors.secondary"></span>
+                </div>
+              </div>
+            }
 
-          <div class="step-actions">
-            <button mat-stroked-button matStepperPrevious [disabled]="installing">
-              <mat-icon>arrow_back</mat-icon> Anterior
+            @if (selectedPlugins.length > 0) {
+              <div class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2.5 rounded-xl text-sm mb-4">
+                <i class="bi bi-puzzle flex-shrink-0"></i>
+                <span>Plugins: {{ selectedPlugins.join(', ') }}</span>
+              </div>
+            }
+
+            <!-- PREVIEW CONFIG -->
+            <details class="mb-4 border border-slate-200 rounded-xl overflow-hidden">
+              <summary class="flex items-center justify-between px-4 py-3 bg-slate-50 cursor-pointer text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+                <span class="flex items-center gap-2"><i class="bi bi-code-slash"></i> Vista previa wp-config.php</span>
+                <i class="bi bi-chevron-down text-slate-400"></i>
+              </summary>
+              <pre class="bg-slate-900 text-emerald-400 text-xs p-4 font-mono overflow-x-auto max-h-48 leading-relaxed">{{ wpConfigPreview || 'Cargando...' }}</pre>
+            </details>
+
+            <!-- PROGRESO -->
+            @if (installing) {
+              <div class="mb-4">
+                <div class="flex justify-between items-center text-sm mb-1">
+                  <span class="text-slate-600 font-medium italic">{{ installSteps[currentStep]?.label }}...</span>
+                  <span class="text-primary-800 font-bold">{{ progressValue }}%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-primary-800 rounded-full transition-all duration-500" [style.width]="progressValue + '%'"></div>
+                </div>
+                <div class="mt-3 space-y-1.5">
+                  @for (step of installSteps; track step.label; let i = $index) {
+                    <div class="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg transition-all"
+                         [ngClass]="i === currentStep ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-100' : step.done ? 'text-emerald-600' : 'text-slate-400'">
+                      <i [class]="step.done ? 'bi bi-check-circle-fill text-emerald-500' : i === currentStep ? 'bi bi-' + step.icon + ' text-blue-500' : 'bi bi-circle text-slate-300'"
+                         class="text-sm flex-shrink-0"></i>
+                      {{ step.label }}
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (error) {
+              <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">
+                <i class="bi bi-exclamation-circle flex-shrink-0"></i> {{ error }}
+              </div>
+            }
+          </div>
+        }
+
+        <!-- FOOTER NAVEGACIÓN -->
+        <div class="px-8 py-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+          <button (click)="prevStep()" [disabled]="currentStep === 0 || installing"
+            class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-white transition-colors disabled:opacity-40">
+            <i class="bi bi-arrow-left"></i> Anterior
+          </button>
+
+          @if (currentStep < 5) {
+            <button (click)="nextStep()" [disabled]="!canNext()"
+              class="flex items-center gap-2 px-6 py-2.5 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors disabled:opacity-40 shadow-sm">
+              Siguiente <i class="bi bi-arrow-right"></i>
             </button>
-            <button mat-flat-button color="primary" (click)="install()" [disabled]="installing">
+          } @else {
+            <button (click)="install()" [disabled]="installing"
+              class="flex items-center gap-2 px-6 py-2.5 bg-primary-800 text-white text-sm font-bold rounded-xl hover:bg-primary-900 transition-colors disabled:opacity-40 shadow-sm">
               @if (installing) {
-                <mat-spinner diameter="20" />
-                <ng-container>Instalando...</ng-container>
+                <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Instalando...
               } @else {
-                <ng-container>
-                  <mat-icon>rocket_launch</mat-icon> Instalar WordPress
-                </ng-container>
+                <i class="bi bi-rocket"></i> Instalar WordPress
               }
             </button>
-          </div>
+          }
         </div>
-      </mat-step>
-
-    </mat-stepper>
-
-  } @else {
-
-    <!-- ÉXITO -->
-    <div class="success-card">
-      <div class="success-icon"><mat-icon>check</mat-icon></div>
-      <h2>¡WordPress instalado! 🎉</h2>
-      <p>Tu sitio está listo y funcionando correctamente</p>
-
-      <div class="success-details">
-        @if (result?.url) {
-          <div class="success-item">
-            <mat-icon>language</mat-icon>
-            <span>{{ result.url }}</span>
-          </div>
-        }
-        @if (result?.adminUrl) {
-          <div class="success-item">
-            <mat-icon>admin_panel_settings</mat-icon>
-            <span>{{ result.adminUrl }}</span>
-          </div>
-        }
       </div>
 
-      <div class="success-actions">
-        @if (result?.url) {
-          <a mat-stroked-button [href]="result.url" target="_blank">
-            <mat-icon>language</mat-icon> Ver sitio
-          </a>
-        }
-        @if (result?.adminUrl) {
-          <a mat-flat-button color="primary" [href]="result.adminUrl" target="_blank">
-            <mat-icon>admin_panel_settings</mat-icon> Ir a wp-admin
-          </a>
-        }
+    } @else {
+
+      <!-- ÉXITO -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm text-center py-16 px-8">
+        <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="bi bi-check-lg text-emerald-600 text-4xl"></i>
+        </div>
+        <h2 class="font-heading text-2xl font-bold text-slate-900 mb-2">¡WordPress instalado! 🎉</h2>
+        <p class="text-slate-500 text-sm mb-8">Tu sitio está listo y funcionando correctamente</p>
+
+        <div class="bg-slate-50 rounded-xl border border-slate-100 p-5 mb-8 text-left space-y-3 max-w-sm mx-auto">
+          @if (result?.url) {
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+              <i class="bi bi-globe text-primary-700 flex-shrink-0"></i>
+              <span class="truncate">{{ result.url }}</span>
+            </div>
+          }
+          @if (result?.adminUrl) {
+            <div class="flex items-center gap-2 text-sm text-slate-600">
+              <i class="bi bi-person-gear text-primary-700 flex-shrink-0"></i>
+              <span class="truncate">{{ result.adminUrl }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-center gap-3 flex-wrap mb-6">
+          @if (result?.url) {
+            <a [href]="result.url" target="_blank"
+              class="flex items-center gap-2 px-5 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              <i class="bi bi-globe"></i> Ver sitio
+            </a>
+          }
+          @if (result?.adminUrl) {
+            <a [href]="result.adminUrl" target="_blank"
+              class="flex items-center gap-2 px-5 py-2.5 bg-primary-800 text-white rounded-xl text-sm font-bold hover:bg-primary-900 transition-colors shadow-sm">
+              <i class="bi bi-person-gear"></i> Ir a wp-admin
+            </a>
+          }
+        </div>
+
+        <button (click)="goToDashboard()"
+          class="text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 mx-auto">
+          <i class="bi bi-grid"></i> Volver al dashboard
+        </button>
       </div>
+    }
 
-      <button mat-button (click)="goToDashboard()" class="back-btn">
-        <mat-icon>dashboard</mat-icon> Volver al dashboard
-      </button>
-    </div>
-
-  }
-
+  </div>
 </div>

@@ -17,6 +17,8 @@ export interface WpInstallConfig {
     adminEmail:      string;
     language:        string;
   };
+  plugins?: string[];
+  theme?:   string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -27,4 +27,5 @@ router.get('/:id/pages',               auth, ctrl.getPages);
 router.post('/:id/pages',              auth, ctrl.createPage);
 router.get('/:id/posts',               auth, ctrl.getPosts);
 
+router.put('/:id/users/:userId', auth, ctrl.updateUser);
 module.exports = router;

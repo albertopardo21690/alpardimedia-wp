@@ -18,6 +18,10 @@ const wp = (projectId, command) => {
 };
 
 // ESTADO DEL SITIO
+exports.runWpCli = async (sitePath, command) => {
+  return await wp(sitePath, command);
+};
+
 exports.getStatus = async (projectId) => {
   try {
     await wp(projectId, 'core is-installed');

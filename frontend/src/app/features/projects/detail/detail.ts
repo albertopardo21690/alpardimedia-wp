@@ -16,6 +16,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { UiService } from '../../../core/services/ui';
 import { WpManagerService } from '../../../core/services/wp-manager';
 
 @Component({
@@ -62,9 +63,18 @@ export class Detail implements OnInit {
   userCols   = ['login', 'email', 'roles', 'actions'];
   pageCols   = ['title', 'status', 'date', 'actions'];
 
+  activeTab = 'pages';
+  tabs = [
+    { id: 'pages',   label: 'Páginas',  icon: 'layout-text-window' },
+    { id: 'plugins', label: 'Plugins',  icon: 'puzzle' },
+    { id: 'themes',  label: 'Temas',    icon: 'palette' },
+    { id: 'users',   label: 'Usuarios', icon: 'people' },
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private wpManager: WpManagerService,
+    private ui: UiService,
     private fb: FormBuilder,
     private snack: MatSnackBar
   ) {
@@ -208,6 +218,35 @@ export class Detail implements OnInit {
         this.loadUsers();
       },
       error: (err) => this.notify(err.error?.error || 'Error', true)
+    });
+  }
+
+  editingUser: any = null;
+  editUserForm: any = null;
+
+  startEditUser(u: any) {
+    this.editingUser = u;
+    this.editUserForm = this.fb.group({
+      password: ['', [Validators.minLength(8)]],
+      role: [u.roles || 'subscriber']
+    });
+  }
+
+  cancelEditUser() { this.editingUser = null; this.editUserForm = null; }
+
+  saveEditUser() {
+    if (!this.editingUser || !this.editUserForm) return;
+    const { password, role } = this.editUserForm.value;
+    const data: any = { role };
+    if (password) data.password = password;
+
+    this.wpManager.updateUser(this.project!.id, this.editingUser.ID, data).subscribe({
+      next: () => {
+        this.ui.success('Usuario actualizado');
+        this.editingUser = null;
+        this.loadUsers();
+      },
+      error: (err: any) => this.ui.error(err.error?.error || 'Error al actualizar')
     });
   }
 

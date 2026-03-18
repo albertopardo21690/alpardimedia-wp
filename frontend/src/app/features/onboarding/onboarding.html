@@ -1,0 +1,58 @@
+<div class="onboarding-wrapper">
+  <div class="onboarding-card scale-in">
+
+    <!-- SKIP -->
+    <button mat-button class="skip-btn" (click)="skip()">
+      Saltar <mat-icon>close</mat-icon>
+    </button>
+
+    <!-- PROGRESS DOTS -->
+    <div class="progress-dots">
+      @for (step of steps; track $index; let i = $index) {
+        <div class="dot"
+             [class.active]="i === currentStep"
+             [class.done]="i < currentStep"
+             (click)="currentStep = i">
+        </div>
+      }
+    </div>
+
+    <!-- STEP CONTENT -->
+    <div class="step-content">
+      <div class="step-icon-wrap"
+           [style.background]="current.color + '15'"
+           [style.border]="'2px solid ' + current.color + '25'">
+        <mat-icon [style.color]="current.color">{{ current.icon }}</mat-icon>
+      </div>
+
+      <div class="step-counter">Paso {{ currentStep + 1 }} de {{ steps.length }}</div>
+      <h2>{{ current.title }}</h2>
+      <p>{{ current.description }}</p>
+
+      @if (current.action && current.actionRoute) {
+        <button mat-flat-button color="primary" (click)="goTo(current.actionRoute!)" class="action-btn">
+          <mat-icon>{{ current.icon }}</mat-icon>
+          {{ current.action }}
+        </button>
+      }
+    </div>
+
+    <!-- NAVEGACIÓN -->
+    <div class="onboarding-nav">
+      <button mat-stroked-button (click)="prev()" [disabled]="isFirst" class="nav-btn">
+        <mat-icon>arrow_back</mat-icon> Anterior
+      </button>
+
+      @if (!isLast) {
+        <button mat-flat-button color="primary" (click)="next()" class="nav-btn primary">
+          Siguiente <mat-icon>arrow_forward</mat-icon>
+        </button>
+      } @else {
+        <button mat-flat-button color="primary" (click)="skip()" class="nav-btn primary">
+          <mat-icon>dashboard</mat-icon> Ir al dashboard
+        </button>
+      }
+    </div>
+
+  </div>
+</div>

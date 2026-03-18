@@ -13,9 +13,19 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register').then(m => m.RegisterComponent)
   },
   {
+    path: 'onboarding',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/onboarding/onboarding').then(m => m.OnboardingComponent)
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent)
   },
   {
     path: 'projects',
@@ -37,5 +47,9 @@ export const routes: Routes = [
       { path: 'logs',      loadComponent: () => import('./features/admin/logs/logs').then(m => m.Logs) },
     ]
   },
-  { path: '**', redirectTo: 'dashboard' }
+  {
+    path: '404',
+    loadComponent: () => import('./features/not-found/not-found').then(m => m.NotFoundComponent)
+  },
+  { path: '**', redirectTo: '404' }
 ];

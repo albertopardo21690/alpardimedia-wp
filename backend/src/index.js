@@ -23,6 +23,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth',      require('./routes/auth.routes'));
 app.use('/api/projects',  require('./routes/projects.routes'));
 app.use('/api/wordpress', require('./routes/wordpress.routes'));
+app.use('/api/profile', require('./routes/profile.routes'));
 app.use('/api/admin',   require('./routes/admin.routes'));
 app.use('/api/manage',    require('./routes/wp-manager.routes'));
 

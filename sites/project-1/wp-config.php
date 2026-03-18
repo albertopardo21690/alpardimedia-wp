@@ -2,11 +2,11 @@
 /**
  * Configuración de WordPress generada por Alpardimedia
  * Proyecto ID: 1
- * Generado: 2026-03-17T12:54:16.604Z
+ * Generado: 2026-03-18T14:40:57.090Z
  */
 
 // ** Configuración de base de datos ** //
-define( 'DB_NAME', 'wp_mi_primer_sitio' );
+define( 'DB_NAME', 'tienda' );
 define( 'DB_USER', 'root' );
 define( 'DB_PASSWORD', '' );
 define( 'DB_HOST', 'localhost' );
@@ -14,14 +14,14 @@ define( 'DB_CHARSET', 'utf8mb4' );
 define( 'DB_COLLATE', '' );
 
 // ** Claves únicas de autenticación y salts ** //
-define( 'AUTH_KEY',         'b193c2cd13934294968fd91a9d3345a7da0f878dbbac4de382b9e4ac2760051c' );
-define( 'SECURE_AUTH_KEY',  '78be38b5f8064f379faeb50852895e1bf1cccf0c00f34957a88045159162c1ee' );
-define( 'LOGGED_IN_KEY',    'fb3e8a7bb1454381b2bfc6af5c5ef3740ffd62e274174cadb3ac361fc1f81aba' );
-define( 'NONCE_KEY',        '41db04aa02f343d898333aad36a4d35c431b1195830948e28368aeec8255cfe6' );
-define( 'AUTH_SALT',        '8b8f60b6a8b34277aeccd6eb601df47d71e2e1639ae94aeb81d45779addeb068' );
-define( 'SECURE_AUTH_SALT', 'a86cfdc67aa64fc5923643b36b1ff80d3126276baf9f48e8b481a459bea583d9' );
-define( 'LOGGED_IN_SALT',   '1ab43a6071294e42ad62c8ea0ae1778a98ca4d3aa28a452b9d6f1add3fd28dd6' );
-define( 'NONCE_SALT',       'cf44ad69612f423e915b056239f58449eb10a4c52aed42b2bcb3b03e059a37eb' );
+define( 'AUTH_KEY',         '070f687f5e60490890fb7b1d1ecc3e78a4ad155339664b9e824e8b0736f7941a' );
+define( 'SECURE_AUTH_KEY',  '7b39750e2fe3420f833f32c21bd9b178eda9de8f27d84de29dbf05dc3c58bf77' );
+define( 'LOGGED_IN_KEY',    '11c1f93cb7a64b1d90ee7c5b92ef58d3b9e41d9ba8604ef7b7336c8333072eb1' );
+define( 'NONCE_KEY',        '3bd53b999b7a4834b05cabf6a3b86364f718489ae26749679ca8c75178e301ef' );
+define( 'AUTH_SALT',        '1c5c57d3733b4c6b8ebbe0ea81c3555e24e74f2ec61442b19d5a177a9bfe3789' );
+define( 'SECURE_AUTH_SALT', 'f0f88d0053354ee096bc175dc7f66cd2dc47dcd172454e978c650b81eeef6817' );
+define( 'LOGGED_IN_SALT',   'c97f9555b45145478ee68550d142e8b3521292fd700844739e607a4a3a8a86f2' );
+define( 'NONCE_SALT',       'bb9f754ea3a049e9851bca5f935db91f8364c129d72447d3bf6e72c994e6939a' );
 
 // ** Prefijo de tablas ** //
 $table_prefix = 'wp_';

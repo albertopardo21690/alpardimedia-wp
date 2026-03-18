@@ -21,6 +21,10 @@ export class WpManagerService {
   installTheme(id: number, theme: string)      { return this.http.post(`${this.api}/${id}/themes/install`, { theme }); }
   getUsers(id: number)                         { return this.http.get<any[]>(`${this.api}/${id}/users`); }
   createUser(id: number, data: any)            { return this.http.post(`${this.api}/${id}/users`, data); }
+  updateUser(projectId: number, userId: number, data: any) {
+    return this.http.put(`${this.api}/${projectId}/users/${userId}`, data);
+  }
+
   deleteUser(id: number, userId: number)       { return this.http.delete(`${this.api}/${id}/users/${userId}`); }
   getPages(id: number, pass: string)           { return this.http.get<any[]>(`${this.api}/${id}/pages?pass=${pass}`); }
   createPage(id: number, data: any)            { return this.http.post(`${this.api}/${id}/pages`, data); }

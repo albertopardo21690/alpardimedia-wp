@@ -1,0 +1,205 @@
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><mat-icon>language</mat-icon></div>
+      <span class="logo-text">Alpardimedia <span>WP</span></span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section">General</span>
+      <a routerLink="/dashboard" class="nav-item"><mat-icon>dashboard</mat-icon> Dashboard</a>
+      <span class="nav-section">Cuenta</span>
+      <a routerLink="/profile"   class="nav-item active"><mat-icon>account_circle</mat-icon> Mi perfil</a>
+      <a routerLink="/projects/install" class="nav-item"><mat-icon>add_circle_outline</mat-icon> Nuevo proyecto</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ profile?.name }}</span>
+      </div>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon style="color:#64748B">logout</mat-icon>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="mobile-header">
+      <button mat-icon-button routerLink="/dashboard"><mat-icon>arrow_back</mat-icon></button>
+      <span>Mi perfil</span>
+    </div>
+
+    @if (loading) {
+      <div class="loading-center"><mat-spinner diameter="48" /></div>
+    } @else {
+
+      <div class="page-header fade-in-up">
+        <div>
+          <h1>Mi perfil</h1>
+          <p>Gestiona tu cuenta y preferencias</p>
+        </div>
+      </div>
+
+      <div class="profile-layout">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="profile-sidebar">
+
+          <!-- AVATAR + INFO -->
+          <div class="profile-card fade-in-up">
+            <div class="avatar-circle">
+              {{ profile?.name?.charAt(0)?.toUpperCase() }}
+            </div>
+            <h3>{{ profile?.name }}</h3>
+            <p>{{ profile?.email }}</p>
+            <div class="plan-badge" [class]="planColors[profile?.plan]">
+              <mat-icon>workspace_premium</mat-icon>
+              Plan {{ planLabels[profile?.plan] || profile?.plan }}
+            </div>
+          </div>
+
+          <!-- STATS -->
+          @if (stats) {
+            <div class="profile-stats fade-in-up stagger-1">
+              <div class="stat-row">
+                <span class="stat-label">Proyectos</span>
+                <span class="stat-val">{{ stats.projects }} / {{ stats.limit === -1 ? '∞' : stats.limit }}</span>
+              </div>
+              <mat-divider />
+              <div class="stat-row">
+                <span class="stat-label">WP instalados</span>
+                <span class="stat-val">{{ stats.installed }}</span>
+              </div>
+              <mat-divider />
+              <div class="stat-row">
+                <span class="stat-label">Acciones</span>
+                <span class="stat-val">{{ stats.activity }}</span>
+              </div>
+              <mat-divider />
+              <div class="stat-row">
+                <span class="stat-label">Miembro desde</span>
+                <span class="stat-val">{{ profile?.created_at | date:'MMM yyyy' }}</span>
+              </div>
+
+              @if (!stats.canCreate) {
+                <div class="plan-alert">
+                  <mat-icon>warning</mat-icon>
+                  Has alcanzado el límite de tu plan. <a routerLink="/profile">Actualizar plan</a>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div class="profile-main">
+          <mat-tab-group class="profile-tabs fade-in-up stagger-2">
+
+            <!-- TAB: INFORMACIÓN -->
+            <mat-tab label="Información">
+              <div class="tab-content-profile">
+                <h3>Datos personales</h3>
+                <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:24px">
+                  Actualiza tu nombre y dirección de correo electrónico
+                </p>
+                <form [formGroup]="profileForm">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nombre completo</mat-label>
+                    <input matInput formControlName="name">
+                    @if (profileForm.get('name')?.hasError('required') && profileForm.get('name')?.touched) {
+                      <mat-error>El nombre es obligatorio</mat-error>
+                    }
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Correo electrónico</mat-label>
+                    <input matInput formControlName="email" type="email">
+                    @if (profileForm.get('email')?.hasError('email')) {
+                      <mat-error>Email no válido</mat-error>
+                    }
+                  </mat-form-field>
+                  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+                    <button mat-flat-button color="primary" (click)="saveProfile()" [disabled]="savingProfile || profileForm.invalid">
+                      @if (savingProfile) { <mat-spinner diameter="18" /> }
+                      @else { <ng-container><mat-icon>save</mat-icon> Guardar cambios</ng-container> }
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </mat-tab>
+
+            <!-- TAB: CONTRASEÑA -->
+            <mat-tab label="Contraseña">
+              <div class="tab-content-profile">
+                <h3>Cambiar contraseña</h3>
+                <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:24px">
+                  Usa una contraseña segura de al menos 8 caracteres
+                </p>
+                <form [formGroup]="passwordForm">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Contraseña actual</mat-label>
+                    <input matInput formControlName="currentPassword" [type]="hideCurrentPw ? 'password' : 'text'">
+                    <button mat-icon-button matSuffix type="button" (click)="hideCurrentPw = !hideCurrentPw">
+                      <mat-icon>{{ hideCurrentPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Nueva contraseña</mat-label>
+                    <input matInput formControlName="newPassword" [type]="hideNewPw ? 'password' : 'text'">
+                    <button mat-icon-button matSuffix type="button" (click)="hideNewPw = !hideNewPw">
+                      <mat-icon>{{ hideNewPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                    @if (passwordForm.get('newPassword')?.hasError('minlength')) {
+                      <mat-error>Mínimo 8 caracteres</mat-error>
+                    }
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Confirmar nueva contraseña</mat-label>
+                    <input matInput formControlName="confirmPassword" type="password">
+                  </mat-form-field>
+                  <div style="display:flex;justify-content:flex-end;margin-top:8px">
+                    <button mat-flat-button color="primary" (click)="changePassword()" [disabled]="savingPassword || passwordForm.invalid">
+                      @if (savingPassword) { <mat-spinner diameter="18" /> }
+                      @else { <ng-container><mat-icon>lock</mat-icon> Cambiar contraseña</ng-container> }
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </mat-tab>
+
+            <!-- TAB: ACTIVIDAD -->
+            <mat-tab label="Actividad">
+              <div class="tab-content-profile">
+                <h3>Historial de actividad</h3>
+                <p style="color:var(--text-muted);font-size:var(--text-sm);margin-bottom:24px">
+                  Últimas {{ activity.length }} acciones realizadas en tu cuenta
+                </p>
+                @if (activity.length === 0) {
+                  <div class="empty-state" style="padding:40px">
+                    <mat-icon>history</mat-icon>
+                    <h3>Sin actividad</h3>
+                    <p>Aquí aparecerán tus acciones</p>
+                  </div>
+                } @else {
+                  <div class="activity-list">
+                    @for (item of activity; track item.id) {
+                      <div class="activity-item">
+                        <div class="activity-icon">
+                          <mat-icon>{{ getActivityIcon(item.action) }}</mat-icon>
+                        </div>
+                        <div class="activity-info">
+                          <p>{{ item.description }}</p>
+                          <small>{{ item.created_at | date:'dd/MM/yyyy HH:mm' }}</small>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </mat-tab>
+
+          </mat-tab-group>
+        </div>
+
+      </div>
+    }
+  </main>
+</div>

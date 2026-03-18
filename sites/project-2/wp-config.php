@@ -2,11 +2,13 @@
 /**
  * Configuración de WordPress generada por Alpardimedia
  * Proyecto ID: 2
- * Generado: 2026-03-17T12:56:23.496Z
+ * Generado: 2026-03-18T14:50:11.420Z
  */
 
 // ** Configuración de base de datos ** //
-define( 'DB_NAME', 'wp_mi_primer_sitio' );
+define('WP_CACHE', true);
+define( 'WPCACHEHOME', 'C:\Users\alber\Desktop\xampp\htdocs\proyectos\alpardimedia-wp\sites\project-2\wp-content\plugins\wp-super-cache/' );
+define( 'DB_NAME', 'tienda' );
 define( 'DB_USER', 'root' );
 define( 'DB_PASSWORD', '' );
 define( 'DB_HOST', 'localhost' );
@@ -14,14 +16,14 @@ define( 'DB_CHARSET', 'utf8mb4' );
 define( 'DB_COLLATE', '' );
 
 // ** Claves únicas de autenticación y salts ** //
-define( 'AUTH_KEY',         '0c679554ed384c46a983c2c1ffb63b943435852b5adf401383d3831cad1d1b2b' );
-define( 'SECURE_AUTH_KEY',  '0ae29c3049674d06a0bdf7739ab224f12adc7e72b24f43d4b0ae58aacc4d8191' );
-define( 'LOGGED_IN_KEY',    'e2c451d0002c4405be4d93f032b17f8c7502ab61b5b44491ae31daf6b8402660' );
-define( 'NONCE_KEY',        '95db3494c0e147dc9aab016ff932bfd78980386aeaca4a4797c84b59f1d61c0b' );
-define( 'AUTH_SALT',        '0e84b4aaf7bb4c1998cac1453d0ab7b06e428948d7474c56a2b4c78b4187a598' );
-define( 'SECURE_AUTH_SALT', '95828c442a94488eaf947e486bdd9d0f6a7e7d4f5d4d45a7af7d56c3df1c78c0' );
-define( 'LOGGED_IN_SALT',   '21693255d2be46f09d475a0436c296675f2699e243724789854ff2f10fbeafba' );
-define( 'NONCE_SALT',       '6fb7489a8c2d48b3a87e34c000f988004e5c5c342b574637bc7850d37d2db9ea' );
+define( 'AUTH_KEY',         '9c34ebb55f67485cb63cfbe8ced34e725898448aab784c049e280f1218392714' );
+define( 'SECURE_AUTH_KEY',  '39c341784c554817ae72e4316be52ff8c88c825593854ac2b239194fddbe4ac3' );
+define( 'LOGGED_IN_KEY',    '3da2bd9c79124015ba2ed45b7fe257f798aefc3472b248ed95c58e3d84c41891' );
+define( 'NONCE_KEY',        '122893bef51142ea9232a62d377add7f2e417d3e98ff4880aec10f88dd0b9e89' );
+define( 'AUTH_SALT',        'f05d3bbc93a844dc985412f0fb6a0063b7d5b7ef3ef340539e45f85bb1204cd4' );
+define( 'SECURE_AUTH_SALT', '8fb783ca2bd141a2ade49bf75d75cc13f2becff9688d4057b63d4bd1baaeaf0d' );
+define( 'LOGGED_IN_SALT',   'c53f8d2e6e1e45c9b8d3f43548f7155be9f7c14b09574b8a82368e4f1e0a3a15' );
+define( 'NONCE_SALT',       '62577cf130514d0193164d71147ebc2659099b66375a4d4da740ee816acb717b' );
 
 // ** Prefijo de tablas ** //
 $table_prefix = 'wp_';

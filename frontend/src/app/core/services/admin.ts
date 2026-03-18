@@ -14,6 +14,10 @@ export class AdminService {
   deleteUser(id: number)              { return this.http.delete(`${this.api}/users/${id}`); }
   updatePlan(id: number, plan: string){ return this.http.patch(`${this.api}/users/${id}/plan`, { plan }); }
   makeAdmin(id: number, role: string) { return this.http.patch(`${this.api}/users/${id}/role`, { role }); }
+  resetPassword(userId: number, newPassword: string) {
+    return this.http.post(`${this.api}/users/reset-password`, { userId, newPassword });
+  }
+
   impersonate(id: number)             { return this.http.post<any>(`${this.api}/users/${id}/impersonate`, {}); }
   getAllProjects()                     { return this.http.get<any[]>(`${this.api}/projects`); }
   deleteProject(id: number)           { return this.http.delete(`${this.api}/projects/${id}`); }

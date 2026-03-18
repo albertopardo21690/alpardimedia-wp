@@ -9,4 +9,5 @@ router.get('/',      auth, asyncHandler(projectsController.getAll));
 router.post('/',     auth, createProjectValidator, validate, asyncHandler(projectsController.create));
 router.delete('/:id',auth, idValidator, validate, asyncHandler(projectsController.remove));
 
+router.post('/cleanup', auth, asyncHandler(projectsController.cleanup));
 module.exports = router;

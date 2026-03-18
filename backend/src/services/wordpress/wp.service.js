@@ -20,7 +20,7 @@ const run = (cmd) => new Promise((resolve, reject) => {
 
 // WP-CLI con PATH de MySQL inyectado
 const wp = (sitePath, command) => {
-  const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
+  const mysqlDir = path.dirname(MYSQL).replace(/[/]/g, '\\');
   const env = `set PATH=${mysqlDir};%PATH% &&`;
   return run(`${env} "${PHP}" "${WP_CLI}" ${command} --path="${sitePath}" --allow-root`);
 };
@@ -78,11 +78,16 @@ exports.install = async (projectId, config) => {
   const wpConfigContent = generateWpConfig({ ...config, projectId });
   fs.writeFileSync(path.join(sitePath, 'wp-config.php'), wpConfigContent, 'utf8');
 
-  // PASO 3 — Crear base de datos
-  console.log('🗄️  PASO 3: Creando base de datos...');
-  const mysqlDir = path.dirname(MYSQL).replace(/\//g, '\\');
-  const createDbCmd = `set PATH=${mysqlDir};%PATH% && "${PHP}" "${WP_CLI}" db create --path="${sitePath}" --allow-root`;
-  await run(createDbCmd);
+  // PASO 3 — Crear base de datos (DROP IF EXISTS + CREATE)
+  console.log('PASO 3: Creando base de datos...');
+  const mysqlDir3 = path.dirname(MYSQL).replace(/[/]/g, '\\');
+  const dbU = config.dbUser || 'root';
+  const dbP = config.dbPassword || '';
+  const pA  = dbP ? '-p' + dbP : '';
+  const dropCmd3 = `set PATH=${mysqlDir3};%PATH% && "${MYSQL}" -u ${dbU} ${pA} -e "DROP DATABASE IF EXISTS \`${config.dbName}\`"`;
+  const createCmd3 = `set PATH=${mysqlDir3};%PATH% && "${MYSQL}" -u ${dbU} ${pA} -e "CREATE DATABASE \`${config.dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"`;
+  await run(dropCmd3);
+  await run(createCmd3);
 
   // PASO 4 — Instalar WordPress
   console.log('🏗️  PASO 4: Instalando WordPress...');
@@ -99,6 +104,18 @@ exports.install = async (projectId, config) => {
     `--allow-root`
   ].join(' ');
   await wp(sitePath, `core install --url="${siteUrl}" --title="${config.siteName}" --admin_user="${config.adminUser}" --admin_password="${config.adminPassword}" --admin_email="${config.adminEmail}" --locale="${config.language || 'es_ES'}" --skip-email`);
+
+  // PASO 4.5 — Instalar idioma si no es inglés
+  if (config.language && config.language !== 'en_US') {
+    try {
+      console.log('🌐 Instalando idioma:', config.language);
+      await wp(sitePath, `language core install ${config.language}`);
+      await wp(sitePath, `site switch-language ${config.language}`);
+      console.log('✅ Idioma instalado:', config.language);
+    } catch (langErr) {
+      console.warn('⚠️  No se pudo instalar el idioma:', langErr.message);
+    }
+  }
 
   // PASO 5 — Configuración inicial
   console.log('🔧 PASO 5: Configuración inicial...');
