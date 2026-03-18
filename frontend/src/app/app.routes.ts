@@ -34,6 +34,7 @@ export const routes: Routes = [
       { path: '',        loadComponent: () => import('./features/projects/list/list').then(m => m.List) },
       { path: 'install', loadComponent: () => import('./features/projects/install/install').then(m => m.InstallComponent) },
       { path: ':id',     loadComponent: () => import('./features/projects/detail/detail').then(m => m.Detail) },
+      { path: ':id/ai',  loadComponent: () => import('./features/ai-panel/ai-panel').then(m => m.AiPanelComponent) },
     ]
   },
   {

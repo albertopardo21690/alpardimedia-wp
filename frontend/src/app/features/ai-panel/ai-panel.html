@@ -1,0 +1,402 @@
+<div class="min-h-screen bg-slate-50">
+
+  <!-- HEADER -->
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+      <a [routerLink]="['/projects', projectId]"
+        class="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex-shrink-0">
+        <i class="bi bi-arrow-left text-base"></i>
+      </a>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+            <i class="bi bi-robot text-white text-sm"></i>
+          </div>
+          <h1 class="font-heading text-xl font-bold text-slate-900">IA Alpardimedia</h1>
+        </div>
+        <p class="text-slate-500 text-xs mt-0.5">Asistente inteligente para tu WordPress</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 py-6">
+
+    <!-- SELECTOR GLOBAL -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+      <h3 class="font-heading text-sm font-bold text-slate-700 mb-3">Configuración global</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Tipo de web</label>
+          <select [(ngModel)]="webType"
+            class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-800">
+            <option value="">Selecciona tipo de web...</option>
+            @for (t of webTypes; track t.id) {
+              <option [value]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Idioma del contenido</label>
+          <select [(ngModel)]="language"
+            class="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-800">
+            @for (l of languages; track l.value) {
+              <option [value]="l.value">{{ l.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div class="flex border-b border-slate-100 overflow-x-auto">
+        @for (tab of tabs; track tab.id) {
+          <button (click)="activeTab = tab.id"
+            class="flex items-center gap-1.5 px-4 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-colors flex-shrink-0"
+            [ngClass]="activeTab === tab.id ? 'border-primary-800 text-primary-800' : 'border-transparent text-slate-500 hover:text-slate-700'">
+            <i [class]="'bi bi-' + tab.icon"></i>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <div class="p-6">
+
+        <!-- CHAT -->
+        @if (activeTab === 'chat') {
+          <div class="flex flex-col" style="height:420px">
+            <div id="chat-messages" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
+              @for (msg of chatMessages; track $index) {
+                <div class="flex gap-2" [ngClass]="msg.role === 'user' ? 'flex-row-reverse' : ''">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                       [ngClass]="msg.role === 'user' ? 'bg-primary-800' : 'bg-indigo-100'">
+                    <i [class]="msg.role === 'user' ? 'bi bi-person text-white text-xs' : 'bi bi-robot text-indigo-600 text-xs'"></i>
+                  </div>
+                  <div class="max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
+                       [ngClass]="msg.role === 'user' ? 'bg-primary-800 text-white rounded-tr-sm' : 'bg-slate-100 text-slate-800 rounded-tl-sm'">
+                    {{ msg.content }}
+                  </div>
+                </div>
+              }
+              @if (chatLoading) {
+                <div class="flex gap-2">
+                  <div class="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-robot text-indigo-600 text-xs"></i>
+                  </div>
+                  <div class="bg-slate-100 rounded-2xl rounded-tl-sm px-4 py-3">
+                    <div class="flex gap-1">
+                      <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                      <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+                      <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="flex gap-2">
+              <div class="flex-1 flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-primary-800 transition-all">
+                <textarea [(ngModel)]="chatInput" (keydown)="onChatKeydown($event)"
+                  placeholder="Pregunta algo sobre tu WordPress..." rows="1"
+                  class="flex-1 outline-none bg-transparent text-sm resize-none text-slate-700 placeholder:text-slate-400 max-h-24"></textarea>
+              </div>
+              <button (click)="sendMessage()" [disabled]="!chatInput.trim() || chatLoading"
+                class="w-10 h-10 bg-primary-800 text-white rounded-xl flex items-center justify-center hover:bg-primary-900 disabled:opacity-40 transition-colors flex-shrink-0">
+                <i class="bi bi-send text-sm"></i>
+              </button>
+              <button (click)="clearChat()"
+                class="w-10 h-10 border border-slate-200 text-slate-500 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors flex-shrink-0">
+                <i class="bi bi-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- PÁGINAS -->
+        @if (activeTab === 'pages') {
+          <div class="space-y-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+              <i class="bi bi-info-circle mr-2"></i>
+              La IA generará páginas completas (Inicio, Sobre nosotros, Servicios, Contacto) adaptadas al tipo de web y las creará en WordPress.
+            </div>
+            <button (click)="generatePages()" [disabled]="pagesLoading || !webType"
+              class="w-full py-3 bg-primary-800 text-white font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
+              @if (pagesLoading) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Generando páginas con IA...</span>
+              } @else {
+                <i class="bi bi-layout-text-window"></i>
+                <span>Generar páginas con IA</span>
+              }
+            </button>
+            @if (pagesResult) {
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                <p class="font-bold text-emerald-800 text-sm mb-2">
+                  <i class="bi bi-check-circle-fill mr-2"></i>
+                  {{ pagesResult.created?.length }} páginas creadas en WordPress
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  @for (page of pagesResult.created; track page) {
+                    <span class="px-3 py-1 bg-white border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-full">{{ page }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- POSTS -->
+        @if (activeTab === 'posts') {
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Tema del artículo</label>
+              <input [(ngModel)]="postTopic" placeholder="Ej: 5 consejos para mejorar tu tienda online"
+                class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="postPublish" class="w-4 h-4 rounded text-primary-800">
+              <span class="text-sm font-semibold text-slate-700">Publicar directamente en WordPress</span>
+            </label>
+            <button (click)="generatePost()" [disabled]="postLoading || !webType || !postTopic.trim()"
+              class="w-full py-3 bg-primary-800 text-white font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
+              @if (postLoading) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Generando artículo...</span>
+              } @else {
+                <i class="bi bi-pencil-square"></i>
+                <span>Generar artículo con IA</span>
+              }
+            </button>
+            @if (postResult) {
+              <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div class="bg-slate-50 px-4 py-3 border-b border-slate-100 flex justify-between items-start gap-3">
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-sm">{{ postResult.title }}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ postResult.excerpt }}</p>
+                  </div>
+                  <button (click)="copyText(postResult.content)"
+                    class="text-xs font-bold text-primary-700 hover:underline flex-shrink-0">
+                    <i class="bi bi-clipboard mr-1"></i> Copiar
+                  </button>
+                </div>
+                <div class="p-4 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 w-32">Meta Title:</span>
+                    <span class="text-xs text-slate-700 flex-1">{{ postResult.meta_title }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 w-32">Meta Description:</span>
+                    <span class="text-xs text-slate-700 flex-1">{{ postResult.meta_description }}</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="text-xs font-bold text-slate-500 w-32 mt-0.5">Tags:</span>
+                    <div class="flex flex-wrap gap-1">
+                      @for (tag of postResult.tags; track tag) {
+                        <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">{{ tag }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- SEO -->
+        @if (activeTab === 'seo') {
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1.5">Keywords objetivo (separadas por comas)</label>
+              <input [(ngModel)]="seoKeywords" placeholder="Ej: tienda online, ropa sostenible, moda ecológica"
+                class="w-full h-11 px-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-800 transition-all">
+            </div>
+            <button (click)="getSeoSuggestions()" [disabled]="seoLoading || !webType"
+              class="w-full py-3 bg-primary-800 text-white font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
+              @if (seoLoading) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Analizando SEO...</span>
+              } @else {
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Generar estrategia SEO</span>
+              }
+            </button>
+            @if (seoResult) {
+              <div class="space-y-3">
+                <div class="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                  <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Keyword principal</p>
+                    <p class="font-bold text-primary-800">{{ seoResult.primary_keyword }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Meta Title</p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm text-slate-700 flex-1">{{ seoResult.meta_title }}</p>
+                      <button (click)="copyText(seoResult.meta_title)" class="text-xs text-primary-700 hover:underline flex-shrink-0"><i class="bi bi-clipboard"></i></button>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Meta Description</p>
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm text-slate-700 flex-1">{{ seoResult.meta_description }}</p>
+                      <button (click)="copyText(seoResult.meta_description)" class="text-xs text-primary-700 hover:underline flex-shrink-0"><i class="bi bi-clipboard"></i></button>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">H1 recomendado</p>
+                    <p class="text-sm font-bold text-slate-800">{{ seoResult.h1 }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keywords secundarias</p>
+                    <div class="flex flex-wrap gap-1">
+                      @for (kw of seoResult.secondary_keywords; track kw) {
+                        <span class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">{{ kw }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-4">
+                  <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Ideas de contenido</p>
+                  <div class="space-y-2">
+                    @for (idea of seoResult.content_ideas; track idea.title) {
+                      <div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
+                        <i class="bi bi-lightbulb text-amber-500 flex-shrink-0"></i>
+                        <span class="text-sm text-slate-700 flex-1">{{ idea.title }}</span>
+                        <span class="text-xs text-slate-400 flex-shrink-0">{{ idea.keyword }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <p class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Tips técnicos</p>
+                  <ul class="space-y-1">
+                    @for (tip of seoResult.technical_tips; track tip) {
+                      <li class="flex items-start gap-2 text-sm text-amber-800">
+                        <i class="bi bi-check2 flex-shrink-0 mt-0.5"></i> {{ tip }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TEXTOS DEL SITIO -->
+        @if (activeTab === 'texts') {
+          <div class="space-y-4">
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-sm text-indigo-800">
+              <i class="bi bi-type mr-2"></i>
+              Genera textos profesionales para Hero, About, Servicios y Footer adaptados a tu tipo de web.
+            </div>
+            <button (click)="generateSiteTexts()" [disabled]="textsLoading || !webType"
+              class="w-full py-3 bg-primary-800 text-white font-bold rounded-xl hover:bg-primary-900 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
+              @if (textsLoading) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Generando textos...</span>
+              } @else {
+                <i class="bi bi-type"></i>
+                <span>Generar textos del sitio</span>
+              }
+            </button>
+            @if (siteTexts) {
+              <div class="space-y-3">
+                @for (item of textItems; track item.key) {
+                  <div class="bg-white border border-slate-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">{{ item.label }}</p>
+                      <button (click)="copyText(siteTexts[item.key])"
+                        class="text-xs font-bold text-primary-700 hover:underline">
+                        <i class="bi bi-clipboard mr-1"></i>Copiar
+                      </button>
+                    </div>
+                    <p class="text-sm text-slate-800">{{ siteTexts[item.key] }}</p>
+                  </div>
+                }
+                @if (siteTexts.services?.length) {
+                  <div class="bg-white border border-slate-200 rounded-xl p-4">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Servicios</p>
+                    <div class="space-y-3">
+                      @for (svc of siteTexts.services; track svc.title) {
+                        <div class="border-l-2 border-primary-300 pl-3">
+                          <p class="font-bold text-sm text-slate-800">{{ svc.title }}</p>
+                          <p class="text-xs text-slate-500 mt-0.5">{{ svc.description }}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- THEME GENERATOR -->
+        @if (activeTab === 'theme') {
+          <div class="space-y-4">
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800">
+              <i class="bi bi-palette mr-2"></i>
+              La IA generará un tema WordPress completo con todos los archivos requeridos según la <strong>WordPress Theme Developer Documentation</strong> y lo activará automáticamente.
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Color primario</label>
+                <div class="flex items-center gap-2 border border-slate-200 rounded-xl px-3 h-11 bg-white">
+                  <input type="color" [(ngModel)]="themeColors.primary" class="w-7 h-7 cursor-pointer rounded border-0 bg-transparent">
+                  <span class="text-sm text-slate-600 font-mono">{{ themeColors.primary }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Color secundario</label>
+                <div class="flex items-center gap-2 border border-slate-200 rounded-xl px-3 h-11 bg-white">
+                  <input type="color" [(ngModel)]="themeColors.secondary" class="w-7 h-7 cursor-pointer rounded border-0 bg-transparent">
+                  <span class="text-sm text-slate-600 font-mono">{{ themeColors.secondary }}</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Fuente títulos</label>
+                <select [(ngModel)]="themeFonts.heading"
+                  class="w-full h-11 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-800">
+                  @for (f of fontOptions; track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Fuente cuerpo</label>
+                <select [(ngModel)]="themeFonts.body"
+                  class="w-full h-11 px-3 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-800">
+                  @for (f of bodyFontOptions; track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+            <button (click)="generateTheme()" [disabled]="themeLoading || !webType"
+              class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-40 transition-all flex items-center justify-center gap-2 shadow-sm">
+              @if (themeLoading) {
+                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Generando tema WordPress con IA... (puede tardar 30s)</span>
+              } @else {
+                <i class="bi bi-palette"></i>
+                <span>Generar tema WordPress con IA</span>
+              }
+            </button>
+            @if (themeResult) {
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                <p class="font-bold text-emerald-800 text-sm mb-2">
+                  <i class="bi bi-check-circle-fill mr-2"></i>
+                  Tema "{{ themeResult.themeName }}" generado y activado
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (file of themeResult.files; track file) {
+                    <span class="px-2.5 py-1 bg-white border border-emerald-200 text-emerald-700 text-xs font-mono rounded-lg">{{ file }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</div>
