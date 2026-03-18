@@ -1,52 +1,78 @@
 <div class="auth-wrapper">
   <div class="auth-card">
-    <div class="auth-logo">
-      <mat-icon>language</mat-icon>
-      <h1>Alpardimedia</h1>
-    </div>
-    <h2>Iniciar sesión</h2>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" autocomplete="email">
-        <mat-icon matPrefix>email</mat-icon>
-        @if (form.get('email')?.hasError('required')) {
-          <mat-error>El email es obligatorio</mat-error>
-        }
-        @if (form.get('email')?.hasError('email')) {
-          <mat-error>Email no válido</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Contraseña</mat-label>
-        <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="current-password">
-        <mat-icon matPrefix>lock</mat-icon>
-        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-        @if (form.get('password')?.hasError('required')) {
-          <mat-error>La contraseña es obligatoria</mat-error>
-        }
-      </mat-form-field>
-
-      @if (error) {
-        <div class="auth-error">
-          <mat-icon>error_outline</mat-icon>
-          {{ error }}
+    <!-- PANEL DECORATIVO IZQUIERDO -->
+    <div class="auth-panel">
+      <div class="panel-blob top"></div>
+      <div class="panel-blob bottom"></div>
+      <div class="panel-content">
+        <h2>Potencia tu ecosistema WordPress</h2>
+        <p>Optimiza, actualiza y gestiona todos tus sitios web desde nuestra plataforma de gestión centralizada.</p>
+        <div class="panel-icons">
+          <div class="icon-box"><mat-icon>language</mat-icon></div>
+          <div class="icon-box"><mat-icon>bolt</mat-icon></div>
+          <div class="icon-box"><mat-icon>shield</mat-icon></div>
         </div>
-      }
+      </div>
+    </div>
 
-      <button mat-flat-button color="primary" type="submit" [disabled]="loading" class="auth-btn">
-        @if (loading) {
-          <mat-spinner diameter="20" />
-        } @else {
-          Entrar
-        }
-      </button>
-    </form>
+    <!-- FORMULARIO -->
+    <div class="auth-form-section">
+      <div class="auth-form-inner">
 
-    <p class="auth-link">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+        <div class="auth-logo">
+          <div class="logo-icon"><mat-icon>language</mat-icon></div>
+          <span>Alpardimedia WP</span>
+        </div>
+
+        <h1 class="auth-heading">Bienvenido de nuevo</h1>
+        <p class="auth-subtitle">Gestiona tus sitios WordPress desde un solo panel</p>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="ejemplo@correo.com" autocomplete="email">
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <mat-error>El email es obligatorio</mat-error>
+            }
+            @if (form.get('email')?.hasError('email')) {
+              <mat-error>Email no válido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" placeholder="••••••••" autocomplete="current-password">
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+              <mat-error>La contraseña es obligatoria</mat-error>
+            }
+          </mat-form-field>
+
+          @if (error) {
+            <div class="auth-error">
+              <mat-icon>error_outline</mat-icon>
+              {{ error }}
+            </div>
+          }
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="loading" class="auth-btn">
+            @if (loading) {
+              <mat-spinner diameter="20" />
+            } @else {
+              Iniciar sesión
+            }
+          </button>
+
+        </form>
+
+        <p class="auth-link">¿No tienes cuenta? <a routerLink="/register">Regístrate</a></p>
+        <p class="auth-footer">v1.0.0</p>
+      </div>
+    </div>
+
   </div>
 </div>

@@ -1,8 +1,8 @@
 <div class="admin-wrapper">
   <aside class="admin-sidebar">
     <div class="sidebar-logo">
-      <mat-icon>shield</mat-icon>
-      <span>Admin Panel</span>
+      <div class="admin-badge"><mat-icon>shield</mat-icon></div>
+      <div class="logo-text"><h2>Alpardimedia</h2><span>WP Admin</span></div>
     </div>
     <nav class="sidebar-nav">
       <span class="nav-section">Panel</span>
@@ -17,72 +17,80 @@
   </aside>
 
   <main class="admin-content">
-    <header class="admin-header">
-      <div>
-        <h1>Proyectos</h1>
-        <p>{{ projects.length }} proyectos en total</p>
+    <div class="admin-topbar">
+      <h2>Proyectos</h2>
+      <div class="topbar-actions">
+        <div class="search-bar">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Buscar proyectos..." [(ngModel)]="search">
+        </div>
       </div>
-      <div class="search-bar">
-        <mat-icon>search</mat-icon>
-        <input type="text" placeholder="Buscar proyectos..." [(ngModel)]="search">
-      </div>
-    </header>
+    </div>
 
-    @if (loading) {
-      <div class="loading-center"><mat-spinner diameter="48" /></div>
-    } @else {
-      <div class="table-card">
-        <mat-table [dataSource]="filteredProjects">
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef>Proyecto</mat-header-cell>
-            <mat-cell *matCellDef="let p">{{ p.name }}</mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="user">
-            <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
-            <mat-cell *matCellDef="let p">
-              <div class="user-cell">
-                <span>{{ p.user_name }}</span>
-                <small>{{ p.user_email }}</small>
-              </div>
-            </mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="status">
-            <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
-            <mat-cell *matCellDef="let p">
-              <span class="badge" [class]="p.status">{{ getStatusLabel(p.status) }}</span>
-            </mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="url">
-            <mat-header-cell *matHeaderCellDef>URL</mat-header-cell>
-            <mat-cell *matCellDef="let p">
-              @if (p.wp_url) {
-                <a [href]="p.wp_url" target="_blank" class="url-link" matTooltip="Abrir sitio">
-                  <mat-icon>open_in_new</mat-icon>
-                </a>
-              }
-            </mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="created">
-            <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
-            <mat-cell *matCellDef="let p">{{ p.created_at | date:'dd/MM/yy' }}</mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef></mat-header-cell>
-            <mat-cell *matCellDef="let p">
-              @if (p.status === 'installed') {
-                <a mat-icon-button [routerLink]="['/projects', p.id]" matTooltip="Gestionar WP">
-                  <mat-icon>settings</mat-icon>
-                </a>
-              }
-              <button mat-icon-button color="warn" (click)="deleteProject(p)" matTooltip="Eliminar">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </mat-cell>
-          </ng-container>
-          <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: cols;"></mat-row>
-        </mat-table>
+    <div class="admin-body">
+      <div class="admin-page-header">
+        <div>
+          <h1>Todos los proyectos</h1>
+          <p>{{ projects.length }} proyectos en la plataforma</p>
+        </div>
       </div>
-    }
+
+      @if (loading) {
+        <div class="loading-center"><mat-spinner diameter="48" /></div>
+      } @else {
+        <div class="table-card fade-in-up">
+          <mat-table [dataSource]="filteredProjects">
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>Proyecto</mat-header-cell>
+              <mat-cell *matCellDef="let p"><strong>{{ p.name }}</strong></mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="user">
+              <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
+              <mat-cell *matCellDef="let p">
+                <div class="user-cell">
+                  <p>{{ p.user_name }}</p>
+                  <small>{{ p.user_email }}</small>
+                </div>
+              </mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+              <mat-cell *matCellDef="let p">
+                <span class="badge" [class]="p.status">{{ getStatusLabel(p.status) }}</span>
+              </mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="url">
+              <mat-header-cell *matHeaderCellDef>URL</mat-header-cell>
+              <mat-cell *matCellDef="let p">
+                @if (p.wp_url) {
+                  <a [href]="p.wp_url" target="_blank" class="url-link" matTooltip="Abrir sitio">
+                    <mat-icon>open_in_new</mat-icon>
+                  </a>
+                }
+              </mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="created">
+              <mat-header-cell *matHeaderCellDef>Fecha</mat-header-cell>
+              <mat-cell *matCellDef="let p" style="color:var(--text-muted)">{{ p.created_at | date:'dd/MM/yy' }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let p">
+                @if (p.status === 'installed') {
+                  <a mat-icon-button [routerLink]="['/projects', p.id]" matTooltip="Gestionar WP">
+                    <mat-icon>settings</mat-icon>
+                  </a>
+                }
+                <button mat-icon-button color="warn" (click)="deleteProject(p)" matTooltip="Eliminar">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </mat-cell>
+            </ng-container>
+            <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: cols;"></mat-row>
+          </mat-table>
+        </div>
+      }
+    </div>
   </main>
 </div>

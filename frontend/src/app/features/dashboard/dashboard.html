@@ -1,4 +1,4 @@
-<div class="dashboard-wrapper">
+<div class="app-layout">
 
   <!-- OVERLAY MOBILE -->
   <div class="sidebar-overlay" [class.visible]="sidebarOpen" (click)="closeSidebar()"></div>
@@ -6,9 +6,10 @@
   <!-- SIDEBAR -->
   <aside class="sidebar" [class.open]="sidebarOpen">
     <div class="sidebar-logo">
-      <mat-icon>language</mat-icon>
-      <span>Alpardimedia</span>
+      <div class="logo-icon"><mat-icon>language</mat-icon></div>
+      <span class="logo-text">Alpardimedia <span>WP</span></span>
     </div>
+
     <nav class="sidebar-nav">
       <span class="nav-section">General</span>
       <a routerLink="/dashboard" class="nav-item active" (click)="closeSidebar()">
@@ -18,14 +19,21 @@
       <a routerLink="/projects/install" class="nav-item" (click)="closeSidebar()">
         <mat-icon>add_circle_outline</mat-icon> Nuevo proyecto
       </a>
+      @if (user()?.role === 'admin') {
+        <span class="nav-section">Administración</span>
+        <a routerLink="/admin" class="nav-item" (click)="closeSidebar()">
+          <mat-icon>shield</mat-icon> Panel admin
+        </a>
+      }
     </nav>
+
     <div class="sidebar-footer">
       <div class="user-info">
         <mat-icon>account_circle</mat-icon>
         <span>{{ user()?.name }}</span>
       </div>
       <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
-        <mat-icon>logout</mat-icon>
+        <mat-icon style="color:#64748B">logout</mat-icon>
       </button>
     </div>
   </aside>
@@ -38,111 +46,103 @@
       <button mat-icon-button (click)="toggleSidebar()">
         <mat-icon>menu</mat-icon>
       </button>
-      <span>Alpardimedia</span>
-      <button mat-icon-button (click)="goToInstall()" matTooltip="Nuevo proyecto">
+      <span>Alpardimedia WP</span>
+      <button mat-icon-button (click)="goToInstall()">
         <mat-icon>add</mat-icon>
       </button>
     </div>
 
-    <!-- HEADER -->
-    <header class="main-header fade-in-up">
+    <!-- PAGE HEADER -->
+    <div class="page-header fade-in-up">
       <div>
         <h1>Dashboard</h1>
-        <p>Bienvenido, {{ user()?.name }} 👋</p>
+        <p>Bienvenido de nuevo, {{ user()?.name }} 👋</p>
       </div>
       <button mat-flat-button color="primary" (click)="goToInstall()">
         <mat-icon>add</mat-icon> Nuevo proyecto
       </button>
-    </header>
+    </div>
 
     <!-- STATS -->
     <div class="stats-grid">
       <div class="stat-card fade-in-up stagger-1">
-        <div class="stat-icon total"><mat-icon>folder_open</mat-icon></div>
+        <div class="stat-icon blue"><mat-icon>folder_open</mat-icon></div>
         <div>
-          <span class="stat-number">{{ projects.length }}</span>
-          <span class="stat-label">Proyectos totales</span>
+          <span class="stat-num">{{ projects.length }}</span>
+          <span class="stat-label">Total proyectos</span>
         </div>
       </div>
       <div class="stat-card fade-in-up stagger-2">
-        <div class="stat-icon installed"><mat-icon>check_circle</mat-icon></div>
+        <div class="stat-icon green"><mat-icon>check_circle</mat-icon></div>
         <div>
-          <span class="stat-number">{{ projects | statusCount:'installed' }}</span>
+          <span class="stat-num">{{ projects | statusCount:'installed' }}</span>
           <span class="stat-label">WP instalados</span>
         </div>
       </div>
       <div class="stat-card fade-in-up stagger-3">
-        <div class="stat-icon pending"><mat-icon>schedule</mat-icon></div>
+        <div class="stat-icon amber"><mat-icon>schedule</mat-icon></div>
         <div>
-          <span class="stat-number">{{ projects | statusCount:'pending' }}</span>
+          <span class="stat-num">{{ projects | statusCount:'pending' }}</span>
           <span class="stat-label">Pendientes</span>
         </div>
       </div>
       <div class="stat-card fade-in-up stagger-4">
-        <div class="stat-icon error"><mat-icon>error_outline</mat-icon></div>
+        <div class="stat-icon red"><mat-icon>error_outline</mat-icon></div>
         <div>
-          <span class="stat-number">{{ projects | statusCount:'error' }}</span>
+          <span class="stat-num">{{ projects | statusCount:'error' }}</span>
           <span class="stat-label">Con errores</span>
         </div>
       </div>
     </div>
 
-    <!-- PROYECTOS -->
-    <section class="projects-section fade-in-up stagger-5">
-
-      <!-- TOOLBAR -->
-      <div class="projects-toolbar">
-        <div class="toolbar-left">
-          <h2>Mis proyectos</h2>
-          <span class="project-count">{{ filteredProjects.length }} resultado{{ filteredProjects.length !== 1 ? 's' : '' }}</span>
-        </div>
-        <div class="toolbar-right">
-          <div class="search-bar">
-            <mat-icon>search</mat-icon>
-            <input
-              type="text"
-              placeholder="Buscar proyectos..."
-              [(ngModel)]="searchQuery"
-              (ngModelChange)="onSearch()"
-            >
-            @if (searchQuery) {
-              <button mat-icon-button class="clear-btn" (click)="searchQuery = ''; onSearch()">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
-          </div>
-          <mat-select [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()" class="filter-select">
-            @for (opt of statusOptions; track opt.value) {
-              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </div>
+    <!-- TOOLBAR -->
+    <div class="toolbar fade-in-up stagger-5">
+      <div class="toolbar-left">
+        <h2>Mis proyectos</h2>
+        <span class="count-badge">{{ filteredProjects.length }} resultado{{ filteredProjects.length !== 1 ? 's' : '' }}</span>
       </div>
+      <div class="toolbar-right">
+        <div class="search-bar">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Buscar proyectos..." [(ngModel)]="searchQuery" (ngModelChange)="onSearch()">
+          @if (searchQuery) {
+            <button mat-icon-button style="width:24px;height:24px" (click)="searchQuery='';onSearch()">
+              <mat-icon style="font-size:0.9rem;width:0.9rem;height:0.9rem">close</mat-icon>
+            </button>
+          }
+        </div>
+        <mat-select [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()" style="width:130px;font-size:0.875rem">
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </div>
+    </div>
 
-      @if (loading) {
-        <div class="loading-center"><mat-spinner diameter="48" /></div>
-      } @else if (projects.length === 0) {
-        <div class="empty-state scale-in">
-          <mat-icon>rocket_launch</mat-icon>
-          <h3>Sin proyectos aún</h3>
-          <p>Crea tu primer proyecto WordPress ahora</p>
-          <button mat-flat-button color="primary" (click)="goToInstall()">
-            <mat-icon>add</mat-icon> Crear proyecto
-          </button>
-        </div>
-      } @else if (filteredProjects.length === 0) {
-        <div class="empty-state scale-in">
-          <mat-icon>search_off</mat-icon>
-          <h3>Sin resultados</h3>
-          <p>No hay proyectos que coincidan con tu búsqueda</p>
-          <button mat-stroked-button (click)="searchQuery = ''; filterStatus = 'all'; onSearch()">
-            Limpiar filtros
-          </button>
-        </div>
-      } @else {
-        <div class="projects-grid">
-          @for (project of paginatedProjects; track project.id; let i = $index) {
-            <div class="project-card fade-in-up" [class]="project.status" [class.stagger-1]="i===0" [class.stagger-2]="i===1" [class.stagger-3]="i===2" [class.stagger-4]="i===3" [class.stagger-5]="i===4" [class.stagger-6]="i===5">
+    <!-- PROYECTOS -->
+    @if (loading) {
+      <div class="loading-center"><mat-spinner diameter="48" /></div>
+    } @else if (projects.length === 0) {
+      <div class="empty-state scale-in">
+        <mat-icon>rocket_launch</mat-icon>
+        <h3>Sin proyectos aún</h3>
+        <p>Crea tu primer proyecto WordPress ahora</p>
+        <button mat-flat-button color="primary" (click)="goToInstall()">
+          <mat-icon>add</mat-icon> Crear proyecto
+        </button>
+      </div>
+    } @else if (filteredProjects.length === 0) {
+      <div class="empty-state scale-in">
+        <mat-icon>search_off</mat-icon>
+        <h3>Sin resultados</h3>
+        <p>No hay proyectos que coincidan con tu búsqueda</p>
+        <button mat-stroked-button (click)="searchQuery='';filterStatus='all';onSearch()">Limpiar filtros</button>
+      </div>
+    } @else {
+      <div class="projects-grid fade-in-up stagger-5">
+        @for (project of paginatedProjects; track project.id; let i = $index) {
+          <div class="project-card" [class]="project.status">
+            <div class="card-body">
 
               <div class="card-header">
                 <div class="card-icon">
@@ -152,7 +152,7 @@
                   <h3 [matTooltip]="project.name">{{ project.name }}</h3>
                   <p>{{ project.description || 'Sin descripción' }}</p>
                 </div>
-                <button mat-icon-button [matMenuTriggerFor]="projectMenu" matTooltip="Opciones">
+                <button mat-icon-button [matMenuTriggerFor]="projectMenu">
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #projectMenu="matMenu">
@@ -172,73 +172,62 @@
               </div>
 
               <div class="card-status" [class]="project.status">
-                <mat-icon>{{ getStatusIcon(project.status) }}</mat-icon>
-                <span>{{ getStatusLabel(project.status) }}</span>
+                <div class="status-dot"></div>
+                <span class="status-text">{{ getStatusLabel(project.status) }}</span>
                 @if (project.wp_url) {
-                  <span class="card-url" [matTooltip]="project.wp_url">{{ project.wp_url }}</span>
+                  <span style="margin-left:auto;font-size:0.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px" [matTooltip]="project.wp_url">{{ project.wp_url }}</span>
                 }
               </div>
 
               @if (project.status === 'installed' && metrics[project.id]) {
                 <div class="card-metrics">
-                  <div class="metric" matTooltip="Posts publicados">
-                    <mat-icon>article</mat-icon>
-                    <span>{{ metrics[project.id].posts }} posts</span>
+                  <div class="metric-item">
+                    <span class="metric-label">Posts</span>
+                    <span class="metric-value">{{ metrics[project.id].posts }}</span>
                   </div>
-                  <div class="metric" matTooltip="Páginas">
-                    <mat-icon>web</mat-icon>
-                    <span>{{ metrics[project.id].pages }} páginas</span>
+                  <div class="metric-item">
+                    <span class="metric-label">Páginas</span>
+                    <span class="metric-value">{{ metrics[project.id].pages }}</span>
                   </div>
-                  <div class="metric" matTooltip="Tema activo">
-                    <mat-icon>palette</mat-icon>
-                    <span>{{ metrics[project.id].theme }}</span>
+                  <div class="metric-item">
+                    <span class="metric-label">Tema</span>
+                    <span class="metric-value accent">{{ metrics[project.id].theme }}</span>
                   </div>
                 </div>
               }
 
-              <div class="card-actions">
-                @if (project.status === 'installed') {
-                  <button mat-stroked-button (click)="goToPanel(project.id)" matTooltip="Gestionar WordPress">
-                    <mat-icon>settings</mat-icon> Gestionar
-                  </button>
-                  @if (project.wp_admin_url) {
-                    <a mat-flat-button color="primary" [href]="project.wp_admin_url" target="_blank" matTooltip="Abrir panel de WordPress">
-                      <mat-icon>open_in_new</mat-icon> wp-admin
-                    </a>
-                  }
-                } @else if (project.status === 'pending') {
-                  <button mat-flat-button color="primary" (click)="goToInstall()" matTooltip="Instalar WordPress en este proyecto">
-                    <mat-icon>download</mat-icon> Instalar WP
-                  </button>
-                } @else if (project.status === 'error') {
-                  <button mat-stroked-button color="warn" (click)="goToPanel(project.id)" matTooltip="Ver detalles del error">
-                    <mat-icon>refresh</mat-icon> Reintentar
-                  </button>
-                }
-              </div>
-
             </div>
-          }
-        </div>
 
-        <!-- PAGINACIÓN -->
-        @if (totalPages > 1) {
-          <div class="pagination">
-            <button mat-icon-button [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)" matTooltip="Página anterior">
-              <mat-icon>chevron_left</mat-icon>
-            </button>
-            @for (page of pages; track page) {
-              <button mat-button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
-                {{ page }}
-              </button>
-            }
-            <button mat-icon-button [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" matTooltip="Página siguiente">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
+            <div class="card-actions">
+              @if (project.status === 'installed') {
+                <button mat-stroked-button (click)="goToPanel(project.id)">Gestionar</button>
+                @if (project.wp_admin_url) {
+                  <a mat-flat-button color="primary" [href]="project.wp_admin_url" target="_blank">wp-admin</a>
+                }
+              } @else if (project.status === 'pending') {
+                <button mat-flat-button color="primary" (click)="goToInstall()">Instalar WP</button>
+              } @else if (project.status === 'error') {
+                <button mat-stroked-button color="warn" (click)="goToPanel(project.id)">Reintentar</button>
+              }
+            </div>
           </div>
         }
+      </div>
+
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button mat-icon-button [disabled]="currentPage===1" (click)="goToPage(currentPage-1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          @for (page of pages; track page) {
+            <button mat-button class="page-btn" [class.active]="page===currentPage" (click)="goToPage(page)">{{ page }}</button>
+          }
+          <button mat-icon-button [disabled]="currentPage===totalPages" (click)="goToPage(currentPage+1)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
       }
-    </section>
+    }
 
   </main>
 </div>

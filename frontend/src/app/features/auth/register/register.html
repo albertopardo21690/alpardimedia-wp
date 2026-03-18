@@ -1,64 +1,83 @@
 <div class="auth-wrapper">
   <div class="auth-card">
-    <div class="auth-logo">
-      <mat-icon>language</mat-icon>
-      <h1>Alpardimedia</h1>
-    </div>
-    <h2>Crear cuenta</h2>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre</mat-label>
-        <input matInput formControlName="name" autocomplete="name">
-        <mat-icon matPrefix>person</mat-icon>
-        @if (form.get('name')?.hasError('required')) {
-          <mat-error>El nombre es obligatorio</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" autocomplete="email">
-        <mat-icon matPrefix>email</mat-icon>
-        @if (form.get('email')?.hasError('required')) {
-          <mat-error>El email es obligatorio</mat-error>
-        }
-        @if (form.get('email')?.hasError('email')) {
-          <mat-error>Email no válido</mat-error>
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Contraseña</mat-label>
-        <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="new-password">
-        <mat-icon matPrefix>lock</mat-icon>
-        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-        @if (form.get('password')?.hasError('required')) {
-          <mat-error>La contraseña es obligatoria</mat-error>
-        }
-        @if (form.get('password')?.hasError('minlength')) {
-          <mat-error>Mínimo 8 caracteres</mat-error>
-        }
-      </mat-form-field>
-
-      @if (error) {
-        <div class="auth-error">
-          <mat-icon>error_outline</mat-icon>
-          {{ error }}
+    <div class="auth-panel">
+      <div class="panel-blob top"></div>
+      <div class="panel-blob bottom"></div>
+      <div class="panel-content">
+        <h2>Empieza gratis hoy</h2>
+        <p>Crea tu cuenta y gestiona tus proyectos WordPress desde un panel centralizado y profesional.</p>
+        <div class="panel-icons">
+          <div class="icon-box"><mat-icon>rocket_launch</mat-icon></div>
+          <div class="icon-box"><mat-icon>language</mat-icon></div>
+          <div class="icon-box"><mat-icon>shield</mat-icon></div>
         </div>
-      }
+      </div>
+    </div>
 
-      <button mat-flat-button color="primary" type="submit" [disabled]="loading" class="auth-btn">
-        @if (loading) {
-          <mat-spinner diameter="20" />
-        } @else {
-          Crear cuenta
-        }
-      </button>
-    </form>
+    <div class="auth-form-section">
+      <div class="auth-form-inner">
 
-    <p class="auth-link">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+        <div class="auth-logo">
+          <div class="logo-icon"><mat-icon>language</mat-icon></div>
+          <span>Alpardimedia WP</span>
+        </div>
+
+        <h1 class="auth-heading">Crear cuenta</h1>
+        <p class="auth-subtitle">Regístrate para gestionar tus WordPress</p>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre completo</mat-label>
+            <input matInput formControlName="name" autocomplete="name" placeholder="Tu nombre">
+            @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+              <mat-error>El nombre es obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="ejemplo@correo.com" autocomplete="email">
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <mat-error>El email es obligatorio</mat-error>
+            }
+            @if (form.get('email')?.hasError('email')) {
+              <mat-error>Email no válido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (form.get('password')?.hasError('minlength')) {
+              <mat-error>Mínimo 8 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          @if (error) {
+            <div class="auth-error">
+              <mat-icon>error_outline</mat-icon>
+              {{ error }}
+            </div>
+          }
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="loading" class="auth-btn">
+            @if (loading) {
+              <mat-spinner diameter="20" />
+            } @else {
+              Crear cuenta
+            }
+          </button>
+
+        </form>
+
+        <p class="auth-link">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+      </div>
+    </div>
+
   </div>
 </div>

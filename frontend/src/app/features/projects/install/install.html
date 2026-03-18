@@ -1,7 +1,7 @@
 <div class="install-wrapper">
 
   <!-- HEADER -->
-  <div class="install-header">
+  <div class="install-header fade-in-up">
     <a mat-icon-button routerLink="/dashboard" matTooltip="Volver al dashboard">
       <mat-icon>arrow_back</mat-icon>
     </a>
@@ -23,25 +23,20 @@
           <div class="step-icon project"><mat-icon>folder_open</mat-icon></div>
           <h2>Datos del proyecto</h2>
           <p>Ponle nombre a tu nuevo proyecto WordPress</p>
-
           <form [formGroup]="step1">
             <mat-form-field appearance="outline">
               <mat-label>Nombre del proyecto</mat-label>
               <input matInput formControlName="name" placeholder="Mi tienda online">
-              <mat-icon matPrefix>label</mat-icon>
               <mat-hint>Se usará para identificar el proyecto en el panel</mat-hint>
               @if (step1.get('name')?.hasError('required') && step1.get('name')?.touched) {
                 <mat-error>El nombre es obligatorio</mat-error>
               }
             </mat-form-field>
-
             <mat-form-field appearance="outline">
               <mat-label>Descripción (opcional)</mat-label>
               <textarea matInput formControlName="description" rows="3" placeholder="Breve descripción del proyecto"></textarea>
-              <mat-icon matPrefix>description</mat-icon>
             </mat-form-field>
           </form>
-
           <div class="step-actions">
             <button mat-flat-button color="primary" matStepperNext [disabled]="step1.invalid">
               Siguiente <mat-icon>arrow_forward</mat-icon>
@@ -55,23 +50,19 @@
         <div class="step-content fade-in-up">
           <div class="step-icon db"><mat-icon>storage</mat-icon></div>
           <h2>Configuración de base de datos</h2>
-          <p>Datos de conexión MySQL para este WordPress</p>
+          <p>Credenciales de conexión MySQL para este WordPress</p>
 
-          <!-- VALIDACIÓN BD -->
           @if (dbValidating) {
             <div class="db-status validating">
-              <mat-spinner diameter="16" />
-              <span>Validando conexión...</span>
+              <mat-spinner diameter="16" /><span>Validando conexión...</span>
             </div>
           } @else if (dbValid === true) {
             <div class="db-status success">
-              <mat-icon>check_circle</mat-icon>
-              <span>{{ dbMessage }}</span>
+              <mat-icon>check_circle</mat-icon><span>{{ dbMessage }}</span>
             </div>
           } @else if (dbValid === false) {
             <div class="db-status error">
-              <mat-icon>error_outline</mat-icon>
-              <span>{{ dbMessage }}</span>
+              <mat-icon>error_outline</mat-icon><span>{{ dbMessage }}</span>
             </div>
           }
 
@@ -79,14 +70,15 @@
             <div class="form-row">
               <mat-form-field appearance="outline">
                 <mat-label>Nombre de la BD</mat-label>
-                <input matInput formControlName="dbName">
-                <mat-icon matPrefix>database</mat-icon>
+                <input matInput formControlName="dbName" placeholder="wp_miproyecto">
                 <mat-hint>Se creará automáticamente</mat-hint>
+                @if (step2.get('dbName')?.hasError('required') && step2.get('dbName')?.touched) {
+                  <mat-error>Obligatorio</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Prefijo de tablas</mat-label>
                 <input matInput formControlName="dbPrefix" placeholder="wp_">
-                <mat-icon matPrefix>tag</mat-icon>
                 @if (step2.get('dbPrefix')?.hasError('pattern')) {
                   <mat-error>Solo letras y guión bajo</mat-error>
                 }
@@ -96,13 +88,11 @@
               <mat-form-field appearance="outline">
                 <mat-label>Usuario MySQL</mat-label>
                 <input matInput formControlName="dbUser">
-                <mat-icon matPrefix>person</mat-icon>
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Contraseña MySQL</mat-label>
                 <input matInput formControlName="dbPassword" [type]="hideDbPassword ? 'password' : 'text'">
-                <mat-icon matPrefix>lock</mat-icon>
-                <button mat-icon-button matSuffix type="button" (click)="hideDbPassword = !hideDbPassword" matTooltip="Mostrar/ocultar">
+                <button mat-icon-button matSuffix type="button" (click)="hideDbPassword = !hideDbPassword">
                   <mat-icon>{{ hideDbPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
                 </button>
                 <button mat-icon-button matSuffix type="button" (click)="generatePassword('dbPassword')" matTooltip="Generar contraseña segura">
@@ -113,7 +103,6 @@
             <mat-form-field appearance="outline">
               <mat-label>Host MySQL</mat-label>
               <input matInput formControlName="dbHost">
-              <mat-icon matPrefix>dns</mat-icon>
             </mat-form-field>
           </form>
 
@@ -128,23 +117,20 @@
         </div>
       </mat-step>
 
-      <!-- PASO 3: ADMIN -->
+      <!-- PASO 3: ADMINISTRADOR -->
       <mat-step [stepControl]="step3" label="Administrador">
         <div class="step-content fade-in-up">
           <div class="step-icon admin"><mat-icon>admin_panel_settings</mat-icon></div>
           <h2>Cuenta de administrador</h2>
           <p>Credenciales para acceder a wp-admin</p>
-
           <form [formGroup]="step3">
             <mat-form-field appearance="outline">
               <mat-label>Usuario administrador</mat-label>
               <input matInput formControlName="adminUser">
-              <mat-icon matPrefix>manage_accounts</mat-icon>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Contraseña administrador</mat-label>
               <input matInput formControlName="adminPassword" [type]="hideAdminPassword ? 'password' : 'text'">
-              <mat-icon matPrefix>lock</mat-icon>
               <button mat-icon-button matSuffix type="button" (click)="hideAdminPassword = !hideAdminPassword">
                 <mat-icon>{{ hideAdminPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
@@ -158,13 +144,11 @@
             <mat-form-field appearance="outline">
               <mat-label>Email administrador</mat-label>
               <input matInput formControlName="adminEmail" type="email">
-              <mat-icon matPrefix>email</mat-icon>
               @if (step3.get('adminEmail')?.hasError('email')) {
                 <mat-error>Email no válido</mat-error>
               }
             </mat-form-field>
           </form>
-
           <div class="step-actions">
             <button mat-stroked-button matStepperPrevious>
               <mat-icon>arrow_back</mat-icon> Anterior
@@ -182,17 +166,14 @@
           <div class="step-icon config"><mat-icon>tune</mat-icon></div>
           <h2>Configuración del sitio</h2>
           <p>Personaliza tu instalación de WordPress</p>
-
           <form [formGroup]="step4">
             <mat-form-field appearance="outline">
               <mat-label>Nombre del sitio</mat-label>
               <input matInput formControlName="siteName">
-              <mat-icon matPrefix>language</mat-icon>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Descripción del sitio</mat-label>
               <input matInput formControlName="siteDescription" placeholder="Just another WordPress site">
-              <mat-icon matPrefix>short_text</mat-icon>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Idioma</mat-label>
@@ -201,10 +182,8 @@
                   <mat-option [value]="lang.value">{{ lang.label }}</mat-option>
                 }
               </mat-select>
-              <mat-icon matPrefix>translate</mat-icon>
             </mat-form-field>
           </form>
-
           <div class="step-actions">
             <button mat-stroked-button matStepperPrevious>
               <mat-icon>arrow_back</mat-icon> Anterior
@@ -291,7 +270,6 @@
             </div>
           }
 
-          <!-- PREVIEW WP-CONFIG -->
           <mat-expansion-panel class="preview-panel" (opened)="loadPreview()">
             <mat-expansion-panel-header>
               <mat-panel-title>
@@ -301,7 +279,6 @@
             <pre class="config-preview">{{ wpConfigPreview || 'Cargando...' }}</pre>
           </mat-expansion-panel>
 
-          <!-- PROGRESO -->
           @if (installing) {
             <div class="install-progress">
               <mat-progress-bar mode="determinate" [value]="progressValue" />
@@ -330,11 +307,10 @@
             <button mat-flat-button color="primary" (click)="install()" [disabled]="installing">
               @if (installing) {
                 <mat-spinner diameter="20" />
-                <span>Instalando...</span>
+                <ng-container>Instalando...</ng-container>
               } @else {
                 <ng-container>
-                  <mat-icon>rocket_launch</mat-icon>
-                  <span>Instalar WordPress</span>
+                  <mat-icon>rocket_launch</mat-icon> Instalar WordPress
                 </ng-container>
               }
             </button>
@@ -347,8 +323,8 @@
   } @else {
 
     <!-- ÉXITO -->
-    <div class="success-card scale-in">
-      <div class="success-icon"><mat-icon>check_circle</mat-icon></div>
+    <div class="success-card">
+      <div class="success-icon"><mat-icon>check</mat-icon></div>
       <h2>¡WordPress instalado! 🎉</h2>
       <p>Tu sitio está listo y funcionando correctamente</p>
 

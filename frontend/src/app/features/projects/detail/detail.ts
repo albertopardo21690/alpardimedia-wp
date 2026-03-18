@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { WpManagerService } from '../../../core/services/wp-manager';
 
 @Component({
@@ -25,7 +26,7 @@ import { WpManagerService } from '../../../core/services/wp-manager';
     MatTabsModule, MatCardModule, MatButtonModule, MatIconModule,
     MatInputModule, MatFormFieldModule, MatChipsModule,
     MatProgressSpinnerModule, MatSlideToggleModule, MatSelectModule,
-    MatTableModule, MatDividerModule, MatSnackBarModule
+    MatTableModule, MatDividerModule, MatSnackBarModule, MatTooltipModule
   ],
   templateUrl: './detail.html',
   styleUrl: './detail.scss'

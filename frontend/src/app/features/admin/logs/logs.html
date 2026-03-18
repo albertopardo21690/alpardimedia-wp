@@ -1,8 +1,8 @@
 <div class="admin-wrapper">
   <aside class="admin-sidebar">
     <div class="sidebar-logo">
-      <mat-icon>shield</mat-icon>
-      <span>Admin Panel</span>
+      <div class="admin-badge"><mat-icon>shield</mat-icon></div>
+      <div class="logo-text"><h2>Alpardimedia</h2><span>WP Admin</span></div>
     </div>
     <nav class="sidebar-nav">
       <span class="nav-section">Panel</span>
@@ -17,14 +17,11 @@
   </aside>
 
   <main class="admin-content">
-    <header class="admin-header">
-      <div>
-        <h1>Logs del sistema</h1>
-        <p>{{ total }} líneas totales — mostrando {{ lines }}</p>
-      </div>
-      <div class="log-controls">
+    <div class="admin-topbar">
+      <h2>Logs del sistema</h2>
+      <div class="topbar-actions log-controls">
         <mat-select [(ngModel)]="logType" (ngModelChange)="loadLogs()" class="log-select">
-          <mat-option value="combined">Todos los logs</mat-option>
+          <mat-option value="combined">Todos</mat-option>
           <mat-option value="error">Solo errores</mat-option>
         </mat-select>
         <mat-select [(ngModel)]="lines" (ngModelChange)="loadLogs()" class="log-select">
@@ -35,43 +32,74 @@
         <button mat-icon-button (click)="loadLogs()" matTooltip="Refrescar">
           <mat-icon>refresh</mat-icon>
         </button>
-        <button mat-icon-button
-          [color]="autoRefresh ? 'accent' : ''"
-          (click)="toggleAutoRefresh()"
-          matTooltip="Auto-refresh cada 5s">
+        <button mat-icon-button [color]="autoRefresh ? 'accent' : ''"
+          (click)="toggleAutoRefresh()" matTooltip="Auto-refresh 5s">
           <mat-icon>{{ autoRefresh ? 'pause' : 'play_arrow' }}</mat-icon>
         </button>
       </div>
-    </header>
+    </div>
 
-    @if (autoRefresh) {
-      <div class="auto-refresh-badge">
-        <mat-icon>fiber_manual_record</mat-icon>
-        Auto-refresh activo — actualizando cada 5 segundos
+    <div class="admin-body">
+      <div class="admin-page-header">
+        <div>
+          <h1>Logs del sistema</h1>
+          <p>{{ total }} líneas totales — mostrando {{ lines }}</p>
+        </div>
       </div>
-    }
 
-    @if (loading) {
-      <div class="loading-center"><mat-spinner diameter="48" /></div>
-    } @else if (logs.length === 0) {
-      <div class="empty-logs">
-        <mat-icon>check_circle</mat-icon>
-        <p>Sin logs disponibles</p>
-      </div>
-    } @else {
-      <div class="logs-container">
-        @for (log of logs; track $index) {
-          <div class="log-line" [class]="getLevelClass(log.level)">
-            <mat-icon class="log-icon">{{ getLevelIcon(log.level) }}</mat-icon>
-            <span class="log-time">{{ log.timestamp }}</span>
-            <span class="log-level">{{ log.level?.toUpperCase() }}</span>
-            <span class="log-message">{{ log.message }}</span>
-            @if (log.code) {
-              <span class="log-code">{{ log.code }}</span>
-            }
+      @if (autoRefresh) {
+        <div class="auto-refresh-badge">
+          <mat-icon>fiber_manual_record</mat-icon>
+          Auto-refresh activo — actualizando cada 5 segundos
+        </div>
+      }
+
+      @if (loading) {
+        <div class="loading-center"><mat-spinner diameter="48" /></div>
+      } @else if (logs.length === 0) {
+        <div class="logs-container">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot red"></div>
+              <div class="dot amber"></div>
+              <div class="dot green"></div>
+            </div>
+            <span class="terminal-title">systemd-journal</span>
           </div>
-        }
-      </div>
-    }
+          <div class="empty-logs">
+            <mat-icon>check_circle</mat-icon>
+            <p>Sin logs disponibles</p>
+          </div>
+        </div>
+      } @else {
+        <div class="logs-container fade-in-up">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot red"></div>
+              <div class="dot amber"></div>
+              <div class="dot green"></div>
+            </div>
+            <span class="terminal-title">systemd-journal</span>
+          </div>
+          <div class="terminal-body">
+            @for (log of logs; track $index) {
+              <div class="log-line" [class]="getLevelClass(log.level)">
+                <span class="log-time">{{ log.timestamp?.substring(11,19) }}</span>
+                <span class="log-level">[{{ log.level?.toUpperCase() }}]</span>
+                <span class="log-message">{{ log.message }}</span>
+                @if (log.code) {
+                  <span class="log-code">{{ log.code }}</span>
+                }
+              </div>
+            }
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+              <span class="log-time">{{ logs[0]?.timestamp?.substring(11,19) }}</span>
+              <span style="color:#D97706;font-weight:700">&gt;</span>
+              <span style="display:inline-block;width:8px;height:14px;background:#475569;animation:pulse 1s infinite"></span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
   </main>
 </div>

@@ -1,8 +1,8 @@
 <div class="admin-wrapper">
   <aside class="admin-sidebar">
     <div class="sidebar-logo">
-      <mat-icon>shield</mat-icon>
-      <span>Admin Panel</span>
+      <div class="admin-badge"><mat-icon>shield</mat-icon></div>
+      <div class="logo-text"><h2>Alpardimedia</h2><span>WP Admin</span></div>
     </div>
     <nav class="sidebar-nav">
       <span class="nav-section">Panel</span>
@@ -17,104 +17,111 @@
   </aside>
 
   <main class="admin-content">
-    <header class="admin-header">
-      <div>
-        <h1>Usuarios</h1>
-        <p>{{ users.length }} usuarios registrados</p>
+    <div class="admin-topbar">
+      <h2>Usuarios</h2>
+      <div class="topbar-actions">
+        <div class="search-bar">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Buscar usuarios..." [(ngModel)]="search">
+        </div>
       </div>
-      <div class="search-bar">
-        <mat-icon>search</mat-icon>
-        <input type="text" placeholder="Buscar usuarios..." [(ngModel)]="search">
+    </div>
+
+    <div class="admin-body">
+      <div class="admin-page-header">
+        <div>
+          <h1>Gestión de usuarios</h1>
+          <p>{{ users.length }} usuarios registrados en la plataforma</p>
+        </div>
       </div>
-    </header>
 
-    @if (loading) {
-      <div class="loading-center"><mat-spinner diameter="48" /></div>
-    } @else {
-      <div class="table-card">
-        <mat-table [dataSource]="filteredUsers">
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef>Nombre</mat-header-cell>
-            <mat-cell *matCellDef="let u">
-              <div class="user-cell">
-                <mat-icon>account_circle</mat-icon>
-                <span>{{ u.name }}</span>
-              </div>
-            </mat-cell>
-          </ng-container>
+      @if (loading) {
+        <div class="loading-center"><mat-spinner diameter="48" /></div>
+      } @else {
+        <div class="table-card fade-in-up">
+          <mat-table [dataSource]="filteredUsers">
 
-          <ng-container matColumnDef="email">
-            <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
-            <mat-cell *matCellDef="let u">{{ u.email }}</mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>Usuario</mat-header-cell>
+              <mat-cell *matCellDef="let u">
+                <div class="user-cell">
+                  <div class="avatar">{{ u.name?.charAt(0)?.toUpperCase() }}</div>
+                  <div class="user-details">
+                    <p>{{ u.name }}</p>
+                    <small>{{ u.email }}</small>
+                  </div>
+                </div>
+              </mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="role">
-            <mat-header-cell *matHeaderCellDef>Rol</mat-header-cell>
-            <mat-cell *matCellDef="let u">
-              <span class="badge" [class]="u.role">{{ u.role }}</span>
-            </mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="role">
+              <mat-header-cell *matHeaderCellDef>Rol</mat-header-cell>
+              <mat-cell *matCellDef="let u">
+                <span class="badge" [class]="u.role">{{ u.role }}</span>
+              </mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="plan">
-            <mat-header-cell *matHeaderCellDef>Plan</mat-header-cell>
-            <mat-cell *matCellDef="let u">
-              <mat-select [(value)]="u.plan" (selectionChange)="updatePlan(u, $event.value)" class="plan-select">
-                @for (plan of plans; track plan) {
-                  <mat-option [value]="plan">{{ plan }}</mat-option>
-                }
-              </mat-select>
-            </mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="plan">
+              <mat-header-cell *matHeaderCellDef>Plan</mat-header-cell>
+              <mat-cell *matCellDef="let u">
+                <mat-select [(value)]="u.plan" (selectionChange)="updatePlan(u, $event.value)" class="plan-select">
+                  @for (plan of plans; track plan) {
+                    <mat-option [value]="plan">{{ plan }}</mat-option>
+                  }
+                </mat-select>
+              </mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="projects">
-            <mat-header-cell *matHeaderCellDef>Proyectos</mat-header-cell>
-            <mat-cell *matCellDef="let u">{{ u.project_count }}</mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="projects">
+              <mat-header-cell *matHeaderCellDef>Proyectos</mat-header-cell>
+              <mat-cell *matCellDef="let u">{{ u.project_count }}</mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="status">
-            <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
-            <mat-cell *matCellDef="let u">
-              <span class="badge" [class]="u.blocked ? 'blocked' : 'active'">
-                {{ u.blocked ? 'Bloqueado' : 'Activo' }}
-              </span>
-            </mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="status">
+              <mat-header-cell *matHeaderCellDef>Estado</mat-header-cell>
+              <mat-cell *matCellDef="let u">
+                <span class="badge" [class]="u.blocked ? 'blocked' : 'active'">
+                  {{ u.blocked ? 'Bloqueado' : 'Activo' }}
+                </span>
+              </mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="created">
-            <mat-header-cell *matHeaderCellDef>Registro</mat-header-cell>
-            <mat-cell *matCellDef="let u">{{ u.created_at | date:'dd/MM/yy' }}</mat-cell>
-          </ng-container>
+            <ng-container matColumnDef="created">
+              <mat-header-cell *matHeaderCellDef>Registro</mat-header-cell>
+              <mat-cell *matCellDef="let u" style="color:var(--text-muted)">{{ u.created_at | date:'dd/MM/yy' }}</mat-cell>
+            </ng-container>
 
-          <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef></mat-header-cell>
-            <mat-cell *matCellDef="let u">
-              <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Opciones">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #userMenu="matMenu">
-                <button mat-menu-item (click)="impersonate(u)">
-                  <mat-icon>person_search</mat-icon> Impersonar
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let u">
+                <button mat-icon-button [matMenuTriggerFor]="userMenu">
+                  <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-menu-item (click)="toggleRole(u)">
-                  <mat-icon>admin_panel_settings</mat-icon>
-                  {{ u.role === 'admin' ? 'Quitar admin' : 'Hacer admin' }}
-                </button>
-                <button mat-menu-item (click)="blockUser(u)">
-                  <mat-icon>{{ u.blocked ? 'lock_open' : 'block' }}</mat-icon>
-                  {{ u.blocked ? 'Desbloquear' : 'Bloquear' }}
-                </button>
-                <mat-divider />
-                <button mat-menu-item (click)="deleteUser(u)" class="menu-danger">
-                  <mat-icon>delete</mat-icon> Eliminar
-                </button>
-              </mat-menu>
-            </mat-cell>
-          </ng-container>
+                <mat-menu #userMenu="matMenu">
+                  <button mat-menu-item (click)="impersonate(u)">
+                    <mat-icon>person_search</mat-icon> Impersonar
+                  </button>
+                  <button mat-menu-item (click)="toggleRole(u)">
+                    <mat-icon>admin_panel_settings</mat-icon>
+                    {{ u.role === 'admin' ? 'Quitar admin' : 'Hacer admin' }}
+                  </button>
+                  <button mat-menu-item (click)="blockUser(u)">
+                    <mat-icon>{{ u.blocked ? 'lock_open' : 'block' }}</mat-icon>
+                    {{ u.blocked ? 'Desbloquear' : 'Bloquear' }}
+                  </button>
+                  <mat-divider />
+                  <button mat-menu-item (click)="deleteUser(u)" class="menu-danger">
+                    <mat-icon>delete_outline</mat-icon> Eliminar
+                  </button>
+                </mat-menu>
+              </mat-cell>
+            </ng-container>
 
-          <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: cols;" [class.blocked-row]="row.blocked"></mat-row>
-        </mat-table>
-      </div>
-    }
+            <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: cols;" [class.blocked-row]="row.blocked"></mat-row>
+          </mat-table>
+        </div>
+      }
+    </div>
   </main>
 </div>
